@@ -19,7 +19,9 @@
           <path d="M16 16l4.5 4.5"></path>
         </svg>
         <span class="prompt" aria-hidden="true">&gt;</span>
-        <input class="q" id="q" type="text" autocomplete="off" spellcheck="false"
+        <!-- autofocus 是 Chrome 官方绕过的一半（另一半是 focus.html 那一跳）：
+             页面被当成"覆盖页的第二个文档"加载之后，它才真的能把光标留在输入框里 -->
+        <input class="q" id="q" type="text" autocomplete="off" spellcheck="false" autofocus
                placeholder="搜索" aria-label="搜索">
         <!-- 右边这条跟着默认引擎走：输入 "g 关键词" 仍可临时改用 Google -->
         <span class="tag" id="engine-tag">BING</span>

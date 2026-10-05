@@ -9,3 +9,10 @@ tmp/pw-artifacts/
 # 全在 tmp/ 下，不进仓库；但 tmp/ 顶层的 .mjs 是可复用的验证/探针脚本，单独放行。
 tmp/*
 !tmp/*.mjs
+
+# 真窗口焦点实验台（tmp/omnibox/）是「浏览器 UI 抢键盘」这类问题的唯一测法，脚本跟着入库；
+# 注意 gitignore 不能重新包含「父目录已被排除」的文件，所以要先放行目录、再把目录内容整体排掉。
+!tmp/omnibox/
+tmp/omnibox/*
+!tmp/omnibox/*.mjs
+!tmp/omnibox/*.ps1

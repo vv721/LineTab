@@ -54,8 +54,8 @@ if (manifest) {
   if (description.length > 132) fail(`description 超过商店上限 132 字符（现在 ${description.length}）`);
 
   const newtab = manifest.chrome_url_overrides?.newtab;
-  if (newtab !== 'newtab.html') fail(`chrome_url_overrides.newtab 应为 newtab.html，实际 ${newtab}`);
-  else pass('chrome_url_overrides.newtab = newtab.html');
+  if (!PAGE_ASSETS.includes(newtab)) fail(`chrome_url_overrides.newtab 应指向白名单里的页面，实际 ${newtab}`);
+  else pass(`chrome_url_overrides.newtab = ${newtab}`);
 
   const permissions = manifest.permissions ?? [];
   const extra = permissions.filter((item) => item !== 'storage');
@@ -108,29 +108,54 @@ if (manifest) {
    扫描面要够宽：`<link href>`、`<script src>`，以及任何 `src=`/`href=` 和 CSS 的 `url()`。
    只扫前两类的话，新加的 `<img src="hero.png">` 或 `background: url(hero.svg)` 会悄悄漏过去 ——
    它们打不进 ZIP，装到 Chrome 里就是 404。 */
-const html = existsSync(join(ROOT, 'newtab.html')) ? read('newtab.html') : '';
-const assetRefs = [...html.matchAll(/\b(?:href|src)="([^"]+)"/gi)].map((match) => match[1]);
+/* 现在有两个页面（focus.html 与 newtab.html），所以逐个扫：
+   漏扫一个新的入口页，就等于那页的引用完全没人管。 */
+const htmlFiles = PAGE_ASSETS.filter((name) => name.endsWith('.html'));
+const pages = new Map();
+for (const name of htmlFiles) pages.set(name, existsSync(join(ROOT, name)) ? read(name) : '');
+
+const assetRefs = [];
+for (const [from, text] of pages) {
+  for (const match of text.matchAll(/\b(?:href|src)="([^"]+)"/gi)) assetRefs.push({ from, ref: match[1] });
+}
 for (const name of PAGE_ASSETS.filter((item) => item.endsWith('.css'))) {
   if (!existsSync(join(ROOT, name))) continue;
   const css = read(name).replace(/\/\*[\s\S]*?\*\//g, ' ');
-  for (const match of css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi)) assetRefs.push(match[1]);
+  for (const match of css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/gi)) assetRefs.push({ from: name, ref: match[1] });
 }
 /* data: 是内联内容、# 是页内锚点、http(s) 由第 5 步单独管，都不算"要打包的文件" */
-const localRefs = assetRefs.filter((ref) => !/^(?:data:|#|https?:)/i.test(ref));
+const localRefs = assetRefs.filter((item) => !/^(?:data:|#|https?:)/i.test(item.ref));
 if (localRefs.length) {
-  const unknown = localRefs.filter((ref) => !PAGE_ASSETS.includes(ref));
-  if (unknown.length) fail(`页面引用了白名单外的文件：${unknown.join(', ')}`);
-  else pass(`页面（含样式里的 url()）的 ${localRefs.length} 个引用都在白名单里（${localRefs.join('、')}）`);
+  const unknown = [...new Set(localRefs.filter((item) => !PAGE_ASSETS.includes(item.ref)).map((item) => `${item.ref}（在 ${item.from}）`))];
+  if (unknown.length) fail(`页面引用了白名单外的文件：${unknown.join('、')}`);
+  else pass(`页面（含样式里的 url()）的 ${localRefs.length} 个引用都在白名单里`);
 } else {
-  fail('newtab.html 没有引用任何样式与脚本？');
+  fail(`${htmlFiles.join('、')} 都没有引用任何样式与脚本？`);
+}
+/* 入口页必须真的引到脚本：focus.html 只负责跳转，一个 <script src> 就是它的全部行为；
+   漏掉它页面会安静地停在空白页上，而本地测试根本不碰这个文件。 */
+const entryPage = manifest?.chrome_url_overrides?.newtab;
+if (entryPage && pages.has(entryPage) && pages.get(entryPage) && !/\bsrc="/i.test(pages.get(entryPage))) {
+  fail(`${entryPage} 里没有 <script src>，那它跳到哪去？`);
+} else if (entryPage && pages.has(entryPage)) {
+  pass(`${entryPage} 引到了脚本`);
 }
 
 /* ---------- 4. MV3 的 CSP：不许内联脚本、不许 on* 属性 ---------- */
-const inlineScript = html.match(/<script\b(?![^>]*\bsrc=)[^>]*>/gi);
-if (inlineScript) fail(`newtab.html 里有内联 <script>（MV3 的 CSP 会直接拒绝）：${inlineScript[0]}`);
-const inlineHandler = html.match(/\son[a-z]+\s*=/gi);
-if (inlineHandler) fail(`newtab.html 里有内联事件属性（MV3 的 CSP 会拒绝）：${inlineHandler.join(' ')}`);
-if (!inlineScript && !inlineHandler) pass('没有内联脚本与内联事件属性');
+let cspOk = true;
+for (const [name, text] of pages) {
+  const inlineScript = text.match(/<script\b(?![^>]*\bsrc=)[^>]*>/gi);
+  if (inlineScript) {
+    fail(`${name} 里有内联 <script>（MV3 的 CSP 会直接拒绝）：${inlineScript[0]}`);
+    cspOk = false;
+  }
+  const inlineHandler = text.match(/\son[a-z]+\s*=/gi);
+  if (inlineHandler) {
+    fail(`${name} 里有内联事件属性（MV3 的 CSP 会拒绝）：${inlineHandler.join(' ')}`);
+    cspOk = false;
+  }
+}
+if (cspOk) pass('没有内联脚本与内联事件属性');
 
 /* ---------- 5. 不许有自己的外部资源 ---------- */
 /** 把注释换成等长空白：注释里出现网址是说明，不是加载资源 */
@@ -147,7 +172,7 @@ function checkExternal(label, text, { allowEngineUrls = false } = {}) {
   return urls.length;
 }
 
-checkExternal('newtab.html', html);
+for (const [name, text] of pages) checkExternal(name, text);
 for (const name of PAGE_ASSETS) {
   if (!name.endsWith('.css')) continue;
   if (!existsSync(join(ROOT, name))) continue; // 缺失已在第 1 步报出
@@ -155,12 +180,15 @@ for (const name of PAGE_ASSETS) {
   if (/@import/i.test(css)) fail(`${name} 里有 @import`);
   checkExternal(name, css);
 }
-if (existsSync(join(ROOT, 'newtab.js'))) {
-  const js = read('newtab.js');
-  const found = [...blankOutComments(js).matchAll(/https?:\/\/[^\s"'`)]+/g)].map((match) => match[0]);
+/* 脚本里的 http(s) 只准是搜索跳转目标（ENGINES 那张表）；
+   逐个 .js 扫，新加的脚本（focus.js）不能被漏掉。 */
+for (const name of PAGE_ASSETS) {
+  if (!name.endsWith('.js')) continue;
+  if (!existsSync(join(ROOT, name))) continue;
+  const found = [...blankOutComments(read(name)).matchAll(/https?:\/\/[^\s"'`)]+/g)].map((match) => match[0]);
   const offenders = found.filter((url) => !ALLOWED_EXTERNAL_URLS.some((allowed) => url.startsWith(allowed)));
-  if (offenders.length) fail(`newtab.js 里有非跳转用途的外部地址：${offenders.join(', ')}`);
-  else if (found.length) pass(`newtab.js 里的 ${found.length} 个地址都是搜索跳转目标`);
+  if (offenders.length) fail(`${name} 里有非跳转用途的外部地址：${offenders.join(', ')}`);
+  else if (found.length) pass(`${name} 里的 ${found.length} 个地址都是搜索跳转目标`);
 }
 if (!problems.some((item) => item.includes('外部地址') || item.includes('@import'))) pass('页面与样式都没有外部资源');
 

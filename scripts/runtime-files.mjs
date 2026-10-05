@@ -18,6 +18,10 @@ export const EXT_DIR = join(PROJECT_ROOT, 'LineTab');
 
 export const RUNTIME_FILES = [
   'manifest.json',
+  // focus.html 是 manifest 里声明的覆盖页：它只做一件事 —— 立刻跳到 newtab.html。
+  // 这一跳是为了把键盘焦点从地址栏抢回来（理由写在 LineTab/focus.js 顶部），别删。
+  'focus.html',
+  'focus.js',
   'newtab.html',
   'newtab.css',
   'newtab.js',

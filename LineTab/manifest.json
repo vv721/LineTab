@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "只有一条底线的搜索新标签页：零网络请求、零依赖、零构建，搜索走你自己的引擎。",
   "chrome_url_overrides": {
-    "newtab": "newtab.html"
+    "newtab": "focus.html"
   },
   "permissions": [
     "storage"
