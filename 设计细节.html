@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-style="paper" data-p="a1">
+<head>
+  <meta charset="utf-8">
+  <title>细节研究 · 一条底线 / 终端会话</title>
+  <link rel="stylesheet" href="LineTab/tokens.css">
+  <link rel="stylesheet" href="proposals-base.css">
+  <link rel="stylesheet" href="details.css">
+</head>
+<body>
+
+<!-- ============================================================
+     A 血统：S1「一条底线」的细节 —— 一次只变一个细节
+     ============================================================ -->
+
+<section class="sheet" data-p="a1" data-note="A1 基准 · 输入 15px / 底线 560px · 放大镜 + 右侧等宽 BING">
+  <div class="d-wrap">
+    <div class="a-field search">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+        <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+      </svg>
+      <input class="q" id="q-a1" type="text" placeholder="搜索，或输入 g 用 Google" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="d-hint">g 前缀改用 Google 搜索</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="a2" data-note="A2 字大一号 · 输入 17px / 底线 640px（比较排版尺度，不是加装饰）">
+  <div class="d-wrap">
+    <div class="a-field search">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+        <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+      </svg>
+      <input class="q" id="q-a2" type="text" placeholder="搜索，或输入 g 用 Google" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="d-hint">g 前缀改用 Google 搜索</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="a3" data-note="A3 无图标 · BING 挪到左侧当前缀（读起来像命令行参数）">
+  <div class="d-wrap">
+    <div class="a-field search">
+      <span class="d-tag">BING</span>
+      <input class="q" id="q-a3" type="text" placeholder="搜索，或输入 g 用 Google" aria-label="搜索">
+    </div>
+    <p class="d-hint">g 前缀改用 Google 搜索</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="a4" data-note="A4 焦点态 · 底线 2px + 图标与标签一起点亮（加 #a4+focus 看效果）">
+  <div class="d-wrap">
+    <div class="a-field search">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+        <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+      </svg>
+      <input class="q" id="q-a4" type="text" placeholder="搜索，或输入 g 用 Google" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="d-hint">g 前缀改用 Google 搜索</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="a5" data-note="A5 输入中 · 画出来的 1px 光标（文字色）+ 右侧 ↵ 出现">
+  <div class="d-wrap">
+    <div class="a-field search">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+        <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+      </svg>
+      <span class="d-typed">chrome 新标签页 设计</span>
+      <span class="caret" aria-hidden="true"></span>
+      <span class="d-push" aria-hidden="true"></span>
+      <span class="d-tag">↵</span>
+    </div>
+    <p class="d-hint">回车搜索 · Esc 清空</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     B 血统：S3「终端会话」的细节
+     ============================================================ -->
+
+<section class="sheet" data-p="b1" data-note="B1 基准 · ❯ 提示符 + ~ newtab 路径行 + tty 页脚">
+  <div class="d-wrap b-wrap">
+    <p class="b-path">~ newtab</p>
+    <div class="b-line">
+      <span class="b-prompt" aria-hidden="true">❯</span>
+      <input class="q" id="q-b1" type="text" placeholder="输入关键词" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="b-hints">g → google　b → bing　↵ → search</p>
+    <p class="b-foot">[↵ 执行] [g / b 指定引擎] [Esc 清空]</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="b2" data-note="B2 去掉路径行，提示符换成 &gt;（更干净，也更像普通 shell）">
+  <div class="d-wrap b-wrap">
+    <div class="b-line">
+      <span class="b-prompt" aria-hidden="true">&gt;</span>
+      <input class="q" id="q-b2" type="text" placeholder="输入关键词" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="b-hints">g → google　b → bing　↵ → search</p>
+    <p class="b-foot">[↵ 执行] [g / b 指定引擎] [Esc 清空]</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="b3" data-note="B3 路径行换成等宽大写标签 SEARCH（把角色写在脸上）">
+  <div class="d-wrap b-wrap">
+    <p class="b-label">SEARCH</p>
+    <div class="b-line">
+      <span class="b-prompt" aria-hidden="true">❯</span>
+      <input class="q" id="q-b3" type="text" placeholder="输入关键词" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="b-hints">g → google　b → bing　↵ → search</p>
+    <p class="b-foot">[↵ 执行] [g / b 指定引擎] [Esc 清空]</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="b4" data-note="B4 输入中 · 块状光标 ▍（终端的标志性细节）">
+  <div class="d-wrap b-wrap">
+    <p class="b-path">~ newtab</p>
+    <div class="b-line">
+      <span class="b-prompt" aria-hidden="true">❯</span>
+      <span class="d-typed">chrome 新标签页 设计</span>
+      <span class="caret-block" aria-hidden="true"></span>
+      <span class="d-push" aria-hidden="true"></span>
+      <span class="d-tag">↵</span>
+    </div>
+    <p class="b-hints">g → google　b → bing　↵ → search</p>
+  </div>
+</section>
+
+<section class="sheet" data-p="b5" data-note="B5 页脚两行：按键提示 + last: —（更像一段会话记录）">
+  <div class="d-wrap b-wrap">
+    <p class="b-path">~ newtab</p>
+    <div class="b-line">
+      <span class="b-prompt" aria-hidden="true">❯</span>
+      <input class="q" id="q-b5" type="text" placeholder="输入关键词" aria-label="搜索">
+      <span class="d-tag">BING</span>
+    </div>
+    <p class="b-hints">g → google　b → bing　↵ → search</p>
+    <p class="b-foot">[↵ 执行] [g / b 指定引擎] [Esc 清空]<br>last: —</p>
+  </div>
+</section>
+
+<div class="bar" role="group" aria-label="切换细节样张">
+  <button type="button" data-p="a1" aria-pressed="true">A1</button>
+  <button type="button" data-p="a2" aria-pressed="false">A2</button>
+  <button type="button" data-p="a3" aria-pressed="false">A3</button>
+  <button type="button" data-p="a4" aria-pressed="false">A4</button>
+  <button type="button" data-p="a5" aria-pressed="false">A5</button>
+  <button type="button" data-p="b1" aria-pressed="false">B1</button>
+  <button type="button" data-p="b2" aria-pressed="false">B2</button>
+  <button type="button" data-p="b3" aria-pressed="false">B3</button>
+  <button type="button" data-p="b4" aria-pressed="false">B4</button>
+  <button type="button" data-p="b5" aria-pressed="false">B5</button>
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+  // 看稿脚本：数字键 1–9 / 0 切样张，hash 支持 #a4 +focus +bare。
+  // 接进真实扩展时，这一段整个不要。
+  const NAMES = ['a1', 'a2', 'a3', 'a4', 'a5', 'b1', 'b2', 'b3', 'b4', 'b5'];
+
+  function apply(name, bare, focus) {
+    document.documentElement.dataset.p = name;
+    document.documentElement.classList.toggle('bare', bare);
+
+    const sheet = document.querySelector(`.sheet[data-p="${name}"]`);
+    document.querySelectorAll('.a-field, .b-line').forEach((el) => {
+      el.classList.toggle('is-focus', focus && sheet.contains(el));
+    });
+    document.getElementById('note').textContent = sheet.dataset.note || '';
+    document.querySelectorAll('.bar button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.p === name));
+    });
+  }
+
+  function fromHash() {
+    const raw = location.hash.slice(1);
+    if (!raw) return;
+    const parts = raw.split('+');
+    const name = NAMES.includes(parts[0]) ? parts[0] : NAMES[0];
+    apply(name, parts.includes('bare'), parts.includes('focus'));
+  }
+
+  document.querySelector('.bar').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (btn) apply(btn.dataset.p, document.documentElement.classList.contains('bare'), false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea')) return;
+    const key = e.key === '0' ? '10' : e.key;
+    const n = Number(key);
+    if (Number.isInteger(n) && n >= 1 && n <= NAMES.length) {
+      apply(NAMES[n - 1], document.documentElement.classList.contains('bare'), false);
+    }
+  });
+
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+  if (!location.hash) apply(NAMES[0], false, false);
+</script>
+
+</body>
+</html>

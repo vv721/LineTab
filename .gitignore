@@ -1,0 +1,11 @@
+node_modules/
+playwright-report/
+tmp/pw-artifacts/
+
+# 打包产物（npm run pack 生成，随时可重建）
+*.zip
+
+# 中间产物：渲染图、临时浏览器 profile、校验器固件工作目录……
+# 全在 tmp/ 下，不进仓库；但 tmp/ 顶层的 .mjs 是可复用的验证/探针脚本，单独放行。
+tmp/*
+!tmp/*.mjs

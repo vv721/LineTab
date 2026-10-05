@@ -1,0 +1,197 @@
+/* ============================================================
+   细节体验台 —— 把"要你拍板的细节"做成可以真的点、真的打字的样张。
+   与 设计细节.html 的区别：那边一次只看一个样张（用来出图），
+   这边把所有选项并排放在一页里（用来上手比较）。
+   样式复用 details.css 里的 .a-field / .d-tag / .caret / .caret-block，
+   本文件只加"体验台"自己的排布与几组焦点态、光标态。
+   ============================================================ */
+
+/* 这一页自己就是设计台面（不是 proposals-base 那套深色看稿外壳），
+   所以把 body 的底色换回浅色语义底：否则浅色样张会落在深底上，
+   白透明/黑透明两组发丝线全糊掉。 */
+.lab-page {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.lab {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  width: 880px;
+  margin: 0 auto;
+  padding: 72px 0 96px;
+}
+
+.lab-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lab-title {
+  margin: 0;
+  font-size: var(--font-xl);
+  font-weight: var(--fw-medium);
+}
+
+.lab-sub {
+  margin: 0;
+  font-size: var(--font-md);
+  color: var(--text-2);
+}
+
+.lab-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 分组标题用等宽大写小标签：让"这是体验台"和"这是设计稿"一眼分得开 */
+.lab-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+.lab-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.lab-tag {
+  flex: 0 0 132px;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+.lab-foot {
+  margin: 0;
+  font-size: var(--font-md);
+  color: var(--text-2);
+}
+
+/* ------------------------------------------------------------
+   左侧元素：L1 放大镜 / L2 ">" 提示符代替放大镜
+   ------------------------------------------------------------ */
+.lab-prompt {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-lg);
+  color: var(--text-3);
+}
+
+.a-field:focus-within .lab-prompt { color: var(--text-2); }
+
+/* ------------------------------------------------------------
+   焦点态：五种。底色规则来自 details.css 的 .a-field:focus-within
+   （默认是"1px 变 --ring"），下面每条只写它相对基准改了哪一点。
+   ------------------------------------------------------------ */
+/* F1 直接用基准：1px、变 --ring */
+
+/* F2 加粗到 2px，并且图标与标签一起点亮 */
+.lab-f2:focus-within { border-bottom-width: 2px; }
+
+/* F3 故意什么都不变（要显式写回来，因为基准会让线变蓝） */
+.lab-f3:focus-within { border-bottom-color: var(--border-strong); }
+
+/* F4 只点亮图标与标签，线保持 1px */
+.lab-f4:focus-within { border-bottom-color: var(--ring); }
+
+/* F5 不用彩色：线变成文字色 */
+.lab-f5:focus-within { border-bottom-color: var(--text); }
+
+.lab-f2:focus-within .ico,
+.lab-f2:focus-within .d-tag,
+.lab-f4:focus-within .ico,
+.lab-f4:focus-within .d-tag { color: var(--text-2); }
+
+/* ------------------------------------------------------------
+   光标：C1 文字色细线 / C2 焦点环色细线 / C3 画出来的块状光标
+   ------------------------------------------------------------ */
+.lab-c1 .q { caret-color: var(--text); }
+.lab-c2 .q { caret-color: var(--ring); }
+
+/* 块状光标：浏览器只让改 caret-color，形状改不了，所以要自己画一个。
+   做法 = 隐藏原生光标 + 用一个跟着文字宽度走的绝对定位方块。 */
+.field-block-live { position: relative; }
+.field-block-live .q { caret-color: transparent; }
+
+.lab-probe {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre;
+  font-family: var(--font-ui);
+  font-size: var(--font-lg);
+}
+
+.caret-live {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 20px;
+  visibility: hidden;
+  background: var(--text);
+  transform: translateY(-50%);
+  animation: lab-blink var(--dur-blink) step-end infinite;
+}
+
+.field-block-live:focus-within .caret-live { visibility: visible; }
+
+@keyframes lab-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* ------------------------------------------------------------
+   终端会话（深色）：同一套细节在深色底上什么样。
+   这里不改结构，只把语义令牌换成深色那一组 —— 令牌系统的用法示范。
+   ------------------------------------------------------------ */
+.lab-dark {
+  --bg: var(--gray-900);
+  --text: var(--gray-0);
+  --text-2: var(--gray-300);
+  --text-3: var(--gray-400);
+  --border-strong: var(--w-12);
+  --ring: var(--blue-400);
+  gap: 28px;
+  padding: 32px;
+  background-color: var(--bg);
+  color: var(--text);
+  border-radius: var(--r-md);
+}
+
+.lab-dark .lab-label { color: var(--text-3); }
+.lab-dark .lab-tag { color: var(--text-3); }
+
+.lab-term {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 560px;
+  padding-bottom: 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.lab-term:focus-within { border-bottom-color: var(--ring); }
+
+.lab-tprompt {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-lg);
+  color: var(--text-3);
+}
+
+.lab-term .q {
+  font-family: var(--font-mono);
+  font-size: var(--font-lg);
+}
+
+.lab-term .d-tag { color: var(--text-3); }
+.lab-term:focus-within .lab-tprompt,
+.lab-term:focus-within .d-tag { color: var(--text-2); }

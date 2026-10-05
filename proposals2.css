@@ -1,0 +1,287 @@
+/* ============================================================
+   第二批：只围绕"搜索框"这一件事做设计（S1–S6）
+   当前方向 —— 不要时钟、不要快捷方式栏/格，重点在风格本身；
+   其中 S2 / S3 / S4 把第一批 P4 里被认可的"终端 / 程序"元素展开。
+   取值全部来自 tokens.css，看稿骨架在 proposals-base.css。
+   ============================================================ */
+
+html[data-p="s1"] .sheet[data-p="s1"],
+html[data-p="s2"] .sheet[data-p="s2"],
+html[data-p="s3"] .sheet[data-p="s3"],
+html[data-p="s4"] .sheet[data-p="s4"],
+html[data-p="s5"] .sheet[data-p="s5"],
+html[data-p="s6"] .sheet[data-p="s6"] { display: block; }
+
+/* ---------- 每版自己的一层语义令牌（浅色三版共用一组） ---------- */
+.sheet[data-p="s1"],
+.sheet[data-p="s2"],
+.sheet[data-p="s5"],
+.sheet[data-p="s6"] {
+  --bg: var(--gray-50);
+  --surface: var(--gray-0);
+  --surface-2: var(--gray-75);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --border: var(--alpha-10);
+  --border-strong: var(--alpha-15);
+  --ring: var(--blue-500);
+  --tile-hover: var(--alpha-05);
+}
+
+/* 深色两版：官方深色只有 #212121 / #303030 两档可用，所以阶梯很浅 */
+.sheet[data-p="s3"],
+.sheet[data-p="s4"] {
+  --bg: var(--gray-900);
+  --surface: var(--gray-800);
+  --surface-2: var(--gray-700);
+  --surface-raised: var(--gray-700);
+  --text: var(--gray-0);
+  --text-2: var(--gray-300);
+  --text-3: var(--gray-400);
+  --border: var(--w-08);
+  --border-strong: var(--w-12);
+  --ring: var(--blue-400);
+  --tile-hover: var(--w-06);
+}
+
+/* ---------- 公共零件（第二批自己加的） ---------- */
+.s-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 64px;
+}
+
+.s-hint {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+.s-keys {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* 等宽小标签：全大写 + 宽字距，让"程序"味落在字上而不是装饰上 */
+.tag {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   S1 「一条底线」—— 极简：只有一条发丝线，聚焦时线变成焦点环色
+   ============================================================ */
+.s1-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 560px;
+  padding: 0 4px 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.s1-field:focus-within { border-bottom-color: var(--ring); }
+
+/* ============================================================
+   S2 「命令面板」—— 一张浮起的卡片 + 三行前缀提示（命令行的"结果区"）
+   ============================================================ */
+.s2-card {
+  width: 640px;
+  background: var(--surface);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.s2-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 16px;
+}
+
+.s2-sep {
+  height: var(--hairline);
+  background: var(--border);
+}
+
+.s2-list { padding: 6px; }
+
+.s2-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+}
+
+.s2-item:hover { background: var(--tile-hover); }
+
+.chip {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+}
+
+.s2-label {
+  flex: 1;
+  font-size: var(--font-md);
+  color: var(--text);
+}
+
+.s2-host {
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   S3 「终端会话」—— 等宽 + 提示符 + tty 页脚，整块左上对齐
+   ============================================================ */
+.s3-wrap {
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0;
+  width: 720px;
+  margin: 0 auto;
+  padding: 96px 0 0;
+  font-family: var(--font-mono);
+}
+
+.s3-path {
+  margin: 0 0 40px;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+.s3-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.s3-line:focus-within { border-bottom-color: var(--ring); }
+
+.s3-prompt {
+  flex: none;
+  font-size: var(--font-xl);
+  color: var(--text-2);
+}
+
+.s3-line .q { font-family: var(--font-mono); font-size: var(--font-xl); }
+
+.s3-hints {
+  margin: 18px 0 0;
+  font-size: var(--font-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-3);
+}
+
+.s3-foot {
+  margin: 56px 0 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   S4 「浮起」—— 深色三级明度阶梯 + 顶部一道内高光，没有一条描边
+   ============================================================ */
+.s4-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 640px;
+  height: 56px;
+  padding: 0 18px;
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  box-shadow: inset 0 var(--hairline) 0 var(--w-06);
+}
+
+.s4-field:focus-within {
+  box-shadow: inset 0 var(--hairline) 0 var(--w-06), 0 0 0 2px var(--ring);
+}
+
+.s4-field .q { font-size: var(--font-xl); }
+
+/* ============================================================
+   S5 「表单」—— 左对齐 + 等宽大写标签，像一张印出来的表单
+   ============================================================ */
+.s5-wrap {
+  align-items: flex-start;
+  gap: 0;
+  width: 720px;
+  margin: 0;
+  padding: 200px 0 0 96px;
+}
+
+.s5-label {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+.s5-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0 2px 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.s5-field:focus-within { border-bottom-color: var(--ring); }
+.s5-field .q { font-size: var(--font-xl); }
+
+.s5-note {
+  margin: 14px 0 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   S6 「大输入」—— 查询本身就是主角：32px 输入 + 一条底线
+   ============================================================ */
+.s6-field {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 720px;
+  padding-bottom: 14px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.s6-field:focus-within { border-bottom-color: var(--ring); }
+
+.s6-field .q {
+  font-size: var(--font-2xl);
+  letter-spacing: var(--ls-tight);
+}
+
+.s6-hint {
+  margin: 16px 0 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN" data-style="paper" data-p="s1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新标签页 · 第二批设计方案（只做搜索框）</title>
+  <!-- 和真页面同一个令牌源：tokens.css 管"长什么样"，本文件只摆结构 -->
+  <link rel="stylesheet" href="LineTab/tokens.css">
+  <link rel="stylesheet" href="proposals-base.css">
+  <link rel="stylesheet" href="proposals2.css">
+</head>
+<body>
+  <main>
+    <!-- ============ S1 一条底线：只有一条发丝线 ============ -->
+    <section class="sheet" data-p="s1" aria-label="S1 一条底线">
+      <div class="wrap s-wrap">
+        <div class="s1-field search">
+          <svg class="ico" viewBox="0 0 18 18" aria-hidden="true">
+            <circle cx="7.5" cy="7.5" r="5" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+            <path d="M11.4 11.4 15.5 15.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+          </svg>
+          <input class="q" type="text" placeholder="搜索，或输入 g 用 Google" autocomplete="off" spellcheck="false" aria-label="搜索">
+          <span class="tag">BING</span>
+        </div>
+        <p class="s-hint">g 前缀改用 Google 搜索</p>
+        <p class="s-keys">↵ 搜索 · / 聚焦 · Esc 清空</p>
+      </div>
+    </section>
+
+    <!-- ============ S2 命令面板：浮起卡片 + 前缀提示行 ============ -->
+    <section class="sheet" data-p="s2" aria-label="S2 命令面板">
+      <div class="wrap s-wrap">
+        <div class="s2-card">
+          <div class="s2-row search">
+            <svg class="ico" viewBox="0 0 18 18" aria-hidden="true">
+              <circle cx="7.5" cy="7.5" r="5" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+              <path d="M11.4 11.4 15.5 15.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+            </svg>
+            <input class="q" type="text" placeholder="搜索，或输入 g 用 Google" autocomplete="off" spellcheck="false" aria-label="搜索">
+            <span class="key">↵</span>
+          </div>
+          <div class="s2-sep"></div>
+          <div class="s2-list">
+            <div class="s2-item">
+              <span class="chip">g</span>
+              <span class="s2-label">用 Google 搜索</span>
+              <span class="s2-host">google.com</span>
+            </div>
+            <div class="s2-item">
+              <span class="chip">b</span>
+              <span class="s2-label">用 Bing 搜索（默认）</span>
+              <span class="s2-host">bing.com</span>
+            </div>
+            <div class="s2-item">
+              <span class="chip">↵</span>
+              <span class="s2-label">直接搜索当前关键词</span>
+              <span class="s2-host">Bing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ S3 终端会话：等宽 + 提示符 + tty 页脚 ============ -->
+    <section class="sheet" data-p="s3" aria-label="S3 终端会话">
+      <div class="wrap s3-wrap">
+        <p class="s3-path">~ newtab</p>
+        <div class="s3-line search">
+          <span class="s3-prompt">❯</span>
+          <input class="q" type="text" placeholder="输入关键词" autocomplete="off" spellcheck="false" aria-label="搜索">
+          <span class="tag">BING</span>
+        </div>
+        <p class="s3-hints">g → google　　b → bing　　↵ → search</p>
+        <p class="s3-foot">[↵ 执行]　[g / b 指定引擎]　[Esc 清空]</p>
+      </div>
+    </section>
+
+    <!-- ============ S4 浮起：三级明度阶梯，没有描边 ============ -->
+    <section class="sheet" data-p="s4" aria-label="S4 浮起">
+      <div class="wrap s-wrap">
+        <div class="s4-field search">
+          <svg class="ico" viewBox="0 0 18 18" aria-hidden="true">
+            <circle cx="7.5" cy="7.5" r="5" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+            <path d="M11.4 11.4 15.5 15.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path>
+          </svg>
+          <input class="q" type="text" placeholder="搜索，或输入 g 用 Google" autocomplete="off" spellcheck="false" aria-label="搜索">
+          <span class="tag">BING</span>
+        </div>
+        <p class="s-hint">g → Google　　b → Bing</p>
+      </div>
+    </section>
+
+    <!-- ============ S5 表单：左对齐 + 等宽大写标签 ============ -->
+    <section class="sheet" data-p="s5" aria-label="S5 表单">
+      <div class="wrap s5-wrap">
+        <p class="s5-label">搜索引擎 — BING</p>
+        <div class="s5-field search">
+          <input class="q" type="text" placeholder="输入关键词" autocomplete="off" spellcheck="false" aria-label="搜索">
+          <span class="key">↵</span>
+        </div>
+        <p class="s5-note">输入 g 前缀改用 Google 搜索</p>
+      </div>
+    </section>
+
+    <!-- ============ S6 大输入：查询本身就是主角 ============ -->
+    <section class="sheet" data-p="s6" aria-label="S6 大输入">
+      <div class="wrap s-wrap">
+        <div class="s6-field search">
+          <input class="q" type="text" placeholder="搜索" autocomplete="off" spellcheck="false" aria-label="搜索">
+          <span class="tag">BING</span>
+        </div>
+        <p class="s6-hint">g 前缀改用 Google 搜索</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 看稿工具条：不属于设计稿本身 -->
+  <nav class="bar" id="bar">
+    <button type="button" data-go="s1">1 一条底线</button>
+    <button type="button" data-go="s2">2 命令面板</button>
+    <button type="button" data-go="s3">3 终端会话</button>
+    <button type="button" data-go="s4">4 浮起</button>
+    <button type="button" data-go="s5">5 表单</button>
+    <button type="button" data-go="s6">6 大输入</button>
+  </nav>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var names = ['s1', 's2', 's3', 's4', 's5', 's6'];
+
+      // 地址栏 hash 摆状态：#s3 、#s3+bare（bare = 藏掉看稿工具条，给截图用）
+      function apply() {
+        var parts = decodeURIComponent(location.hash.slice(1)).split('+').filter(Boolean);
+        var pick = parts.filter(function (p) { return names.indexOf(p) >= 0; })[0] || 's1';
+        root.dataset.p = pick;
+        document.body.classList.toggle('bare', parts.indexOf('bare') >= 0);
+        document.querySelectorAll('[data-go]').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.dataset.go === pick));
+        });
+      }
+
+      function go(i) { location.hash = names[i]; }
+
+      window.addEventListener('hashchange', apply);
+      document.addEventListener('keydown', function (e) {
+        if (e.target.closest('input, textarea')) { return; } // 正在输入时数字键是文字
+        var i = parseInt(e.key, 10) - 1;
+        if (i >= 0 && i < names.length) { go(i); }
+      });
+      document.querySelectorAll('[data-go]').forEach(function (b) {
+        b.addEventListener('click', function () { location.hash = b.dataset.go; });
+      });
+      apply();
+    })();
+  </script>
+</body>
+</html>

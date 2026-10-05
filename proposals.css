@@ -1,0 +1,359 @@
+/* ============================================================
+   第一批五版设计方案（P1–P5）—— 只摆结构，取值全部来自 tokens.css
+   看稿骨架（外壳 / 容器 / 公共零件）在 proposals-base.css
+   每个 .sheet[data-p="pn"] 自己覆盖一组语义令牌：
+   想看"结构差异"时它们互不干扰，想看"配色差异"时改一处即可。
+   规则不变：不准裸色值 / 裸圆角 / 裸字号 —— 由 stylelint.config.mjs 强制。
+   ============================================================ */
+
+html[data-p="p1"] .sheet[data-p="p1"],
+html[data-p="p2"] .sheet[data-p="p2"],
+html[data-p="p3"] .sheet[data-p="p3"],
+html[data-p="p4"] .sheet[data-p="p4"],
+html[data-p="p5"] .sheet[data-p="p5"] { display: block; }
+
+/* ============================================================
+   P1 「列表」—— 左对齐工作台：一张卡片搜索框 + 竖向快捷方式行
+   ============================================================ */
+.sheet[data-p="p1"] {
+  --bg: var(--gray-50);
+  --surface: var(--gray-0);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --border: var(--alpha-10);
+  --border-strong: var(--alpha-15);
+  --ring: var(--blue-500);
+  --tile-hover: var(--alpha-05);
+}
+
+.p1 { display: flex; align-items: center; justify-content: center; padding: 64px 0; }
+
+.p1-wrap { width: 720px; margin: 0 auto; }
+
+.p1-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.p1-search:focus-within { border-color: var(--ring); }
+
+.p1-list { margin-top: 24px; border-top: var(--hairline) solid var(--border); }
+
+.p1-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 10px;
+  border-bottom: var(--hairline) solid var(--border);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.p1-row:hover { background: var(--tile-hover); }
+
+.p1-ico {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: var(--font-sm);
+  font-weight: var(--fw-medium);
+}
+
+.p1-name { font-size: var(--font-lg); }
+.p1-host { margin-left: auto; font-size: var(--font-sm); color: var(--text-3); }
+
+/* ============================================================
+   P2 「网格」—— 直角 + 可见发丝网格：一切贴格线，不用阴影
+   ============================================================ */
+.sheet[data-p="p2"] {
+  --bg: var(--gray-0);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --border: var(--alpha-10);
+  --border-strong: var(--alpha-20);
+  --ring: var(--blue-500);
+  --tile-hover: var(--alpha-05);
+}
+
+.p2 {
+  padding: 80px;
+  background-image:
+    linear-gradient(var(--alpha-05) var(--hairline), transparent var(--hairline)),
+    linear-gradient(90deg, var(--alpha-05) var(--hairline), transparent var(--hairline));
+  background-size: 80px 80px;
+}
+
+.p2-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 560px;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--bg);
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--r-sm);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.p2-search:focus-within { border-color: var(--ring); }
+
+/* 全部贴 80px 网格线：搜索框左/右在 80/640，方块列距 160、行距 160 */
+.p2-tiles {
+  display: grid;
+  grid-template-columns: repeat(5, 144px);
+  gap: 16px;
+  margin-top: 104px;
+}
+
+.p2-tile {
+  height: 144px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--bg);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-sm);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.p2-tile:hover { background: var(--tile-hover); border-color: var(--border-strong); }
+.p2-letter { font-size: var(--font-lg); font-weight: var(--fw-medium); color: var(--text-2); }
+.p2-label { font-size: var(--font-sm); color: var(--text-3); }
+
+/* ============================================================
+   P3 「浮起」—— 深色优先：没有一条描边、没有一处阴影，只靠明度分层
+   ============================================================ */
+.sheet[data-p="p3"] {
+  --bg: var(--gray-900);       /* #181818 幕底 */
+  --surface: var(--gray-700);  /* #303030 浮起层 */
+  --surface-2: var(--gray-800);/* #212121 贴着幕底的一层 */
+  --text: var(--gray-0);
+  --text-2: var(--gray-300);
+  --text-3: var(--gray-400);
+  --border: var(--w-12);
+  --border-strong: var(--w-20);
+  --ring: var(--blue-400);
+}
+
+.p3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 56px;
+  padding: 0 64px;
+}
+
+.p3-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 640px;
+  height: 56px;
+  padding: 0 18px;
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--r-md);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.p3-search:focus-within { box-shadow: 0 0 0 2px var(--ring); }
+
+.p3-tiles { display: grid; grid-template-columns: repeat(5, 96px); gap: 12px; }
+
+.p3-tile {
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.p3-tile:hover { background: var(--surface); color: var(--text); }
+.p3-letter { font-size: var(--font-lg); font-weight: var(--fw-medium); color: var(--text); }
+.p3-label { font-size: var(--font-sm); color: var(--text-2); }
+
+/* ============================================================
+   P4 「终端」—— 等宽 + 直角 + 编号清单：Codex CLI 血统
+   ============================================================ */
+.sheet[data-p="p4"] {
+  --bg: var(--gray-0);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --border: var(--alpha-10);
+  --border-strong: var(--alpha-20);
+  --ring: var(--blue-500);
+}
+
+.p4 { padding: 72px 96px; font-family: var(--font-mono); }
+
+.p4-prompt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 620px;
+  padding-bottom: 10px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.p4-sign { flex: none; font-size: var(--font-lg); color: var(--text-3); }
+.p4 .q { font-family: var(--font-mono); caret-color: var(--text); }
+.p4-hint { flex: none; font-size: var(--font-sm); color: var(--text-3); }
+
+.p4-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 40px;
+  width: 620px;
+  margin-top: 36px;
+}
+
+.p4-link {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  height: 34px;
+  color: var(--text-2);
+  transition: color var(--dur) var(--ease);
+}
+
+.p4-link:hover { color: var(--text); }
+.p4-n { flex: none; font-size: var(--font-sm); color: var(--text-3); }
+.p4-name { font-size: var(--font-md); }
+
+/* 终端底部的按键提示行（Codex CLI 那种"教你怎么用"的一行小字） */
+.p4-hints {
+  width: 620px;
+  margin: 32px 0 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ============================================================
+   P5 「内嵌」—— 搜索框是灰底内嵌块（无描边无阴影），快捷方式是纯文字
+   ============================================================ */
+.sheet[data-p="p5"] {
+  --bg: var(--gray-50);
+  --surface-2: var(--gray-75);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --ring: var(--blue-500);
+}
+
+.p5 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  padding: 0 64px;
+}
+
+.p5-search {
+  display: flex;
+  align-items: center;
+  width: 600px;
+  height: 56px;
+  padding: 0 18px;
+  background: var(--surface-2);
+  border: 0;
+  border-radius: var(--r-md);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.p5-search:focus-within { box-shadow: 0 0 0 2px var(--ring); }
+.p5 .q { font-size: var(--font-xl); }
+
+/* 刻意排成 5 列两行（第二行 4 个自动居中），而不是让它自己挤成一行 ——
+   纯文字才需要靠"行"来立住 */
+.p5-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 660px;
+}
+
+.p5-link {
+  flex: 0 0 20%;
+  padding: 9px 0;
+  text-align: center;
+  font-size: var(--font-md);
+  color: var(--text-3);
+  transition: color var(--dur) var(--ease);
+}
+
+.p5-link:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ============================================================
+   公共零件：设置入口 —— 五个方案都保留入口，但位置与形态各不相同
+   ============================================================ */
+.set {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.set svg { width: 18px; height: 18px; }
+.set:hover { color: var(--text); }
+
+.p1-set, .p2-set, .p3-set {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+}
+
+.p1-set { background: var(--surface); border: var(--hairline) solid var(--border); border-radius: var(--r-md); }
+.p1-set:hover { background: var(--tile-hover); }
+.p2-set { background: var(--bg); border: var(--hairline) solid var(--border); border-radius: var(--r-sm); }
+.p2-set:hover { background: var(--tile-hover); }
+.p3-set { background: var(--surface-2); border-radius: var(--r-md); }
+.p3-set:hover { background: var(--surface); }
+
+.set-txt {
+  position: fixed;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+
+.set-txt:hover { color: var(--text); }
+.p4-set { left: 96px; bottom: 72px; font-family: var(--font-mono); }
+.p4-set:hover { color: var(--text); }
+.p5-set { left: 50%; bottom: 48px; transform: translateX(-50%); }

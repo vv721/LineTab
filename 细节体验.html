@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-style="paper">
+<head>
+  <meta charset="utf-8">
+  <title>搜索框细节 · 体验台</title>
+  <link rel="stylesheet" href="LineTab/tokens.css">
+  <link rel="stylesheet" href="proposals-base.css">
+  <link rel="stylesheet" href="details.css">
+  <link rel="stylesheet" href="details-lab.css">
+</head>
+<body class="lab-page">
+
+<main class="lab">
+
+  <header class="lab-head">
+    <h1 class="lab-title">搜索框细节 · 可以上手试</h1>
+    <p class="lab-sub">字号 15px、底线 560px（你选的那档）。点进任意一行的输入框：焦点态看线的变化，光标看形状，左侧元素看气质。</p>
+  </header>
+
+  <!-- ============================================================
+       01 左侧元素
+       ============================================================ -->
+  <section class="lab-group">
+    <h2 class="lab-label">01 · 左侧元素</h2>
+
+    <div class="lab-row">
+      <span class="lab-tag">L1 放大镜</span>
+      <div class="a-field search">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-l1" type="text" placeholder="搜索，或输入 g 用 Google" aria-label="搜索，放大镜版">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">L2 &gt; 提示符</span>
+      <div class="a-field search">
+        <span class="lab-prompt" aria-hidden="true">&gt;</span>
+        <input class="q" id="q-l2" type="text" placeholder="搜索，或输入 g 用 Google" aria-label="搜索，提示符版">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       02 焦点态：五种，点进去分别看
+       ============================================================ -->
+  <section class="lab-group">
+    <h2 class="lab-label">02 · 焦点态（点进去看哪一处变了）</h2>
+
+    <div class="lab-row">
+      <span class="lab-tag">F1 1px 变蓝</span>
+      <div class="a-field search lab-f1">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-f1" type="text" placeholder="只有底线变焦点环色" aria-label="焦点态 F1">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">F2 2px + 点亮</span>
+      <div class="a-field search lab-f2">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-f2" type="text" placeholder="底线 2px + 图标点亮" aria-label="焦点态 F2">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">F3 不变色</span>
+      <div class="a-field search lab-f3">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-f3" type="text" placeholder="界面不动，只看光标" aria-label="焦点态 F3">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">F4 1px + 点亮</span>
+      <div class="a-field search lab-f4">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-f4" type="text" placeholder="线 1px + 图标点亮" aria-label="焦点态 F4">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">F5 深灰细线</span>
+      <div class="a-field search lab-f5">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-f5" type="text" placeholder="不用彩色，线变成文字色" aria-label="焦点态 F5">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       03 光标：点进去打字，看三种手感
+       ============================================================ -->
+  <section class="lab-group">
+    <h2 class="lab-label">03 · 光标（点进去打字）</h2>
+
+    <div class="lab-row">
+      <span class="lab-tag">C1 细线 · 文字色</span>
+      <div class="a-field search lab-c1">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-c1" type="text" placeholder="和文字同色的细光标" aria-label="光标 C1">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">C2 细线 · 焦点环色</span>
+      <div class="a-field search lab-c2">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-c2" type="text" placeholder="蓝色细光标" aria-label="光标 C2">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">C3 块状 ▍</span>
+      <div class="a-field search field-block-live">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" id="q-c3" type="text" placeholder="块状光标 ▍" aria-label="光标 C3">
+        <span class="d-tag">BING</span>
+        <span class="caret-live" aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       04 终端会话：同一套细节放到深色底上
+       ============================================================ -->
+  <section class="lab-group lab-dark">
+    <h2 class="lab-label">04 · 终端会话（深色底）</h2>
+
+    <div class="lab-row">
+      <span class="lab-tag">T1 &gt; + 底线</span>
+      <div class="lab-term">
+        <span class="lab-tprompt" aria-hidden="true">&gt;</span>
+        <input class="q" id="q-t1" type="text" placeholder="输入关键词" aria-label="终端 T1">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">T2 &gt; + 块状光标</span>
+      <div class="lab-term field-block-live">
+        <span class="lab-tprompt" aria-hidden="true">&gt;</span>
+        <input class="q" id="q-t2" type="text" placeholder="输入关键词" aria-label="终端 T2">
+        <span class="d-tag">BING</span>
+        <span class="caret-live" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <div class="lab-row">
+      <span class="lab-tag">T3 ❯ 提示符</span>
+      <div class="lab-term">
+        <span class="lab-tprompt" aria-hidden="true">❯</span>
+        <input class="q" id="q-t3" type="text" placeholder="输入关键词" aria-label="终端 T3">
+        <span class="d-tag">BING</span>
+      </div>
+    </div>
+  </section>
+
+  <p class="lab-foot">这一页只是体验台，不是定稿：你体验完指哪几个，我把选中的那组落进 tokens.css / newtab.css，并清掉没选中的样张。</p>
+
+</main>
+
+<script>
+  // 块状光标：形状改不了（浏览器只让改 caret-color），所以自己画一个方块，
+  // 用一个不可见的测宽元素量出"光标前后那段文字的宽度"，再把方块放到那个位置。
+  // 这一段只是为了让 C3 / T2 可体验；如果最后没用块状光标，整段删掉即可。
+  function attachBlockCaret(field, input, caret) {
+    const probe = document.createElement('span');
+    probe.className = 'lab-probe';
+    field.appendChild(probe);
+
+    const sync = () => {
+      const upto = input.value.slice(0, input.selectionStart ?? input.value.length);
+      probe.textContent = upto;
+      caret.style.left = `${input.offsetLeft + probe.offsetWidth}px`;
+    };
+
+    ['input', 'keyup', 'click', 'select', 'focus'].forEach((ev) => input.addEventListener(ev, sync));
+    sync();
+  }
+
+  document.querySelectorAll('.field-block-live').forEach((field) => {
+    attachBlockCaret(field, field.querySelector('.q'), field.querySelector('.caret-live'));
+  });
+
+  // 截图/演示用：地址栏写 #demo-c3 或 #demo-t2，就把那一行填上字并聚焦，
+  // 好让无头截图也能拍到块状光标（无头浏览器不会自己打字）。
+  const demo = location.hash.match(/^#demo-([\w-]+)$/);
+  if (demo) {
+    const input = document.getElementById(`q-${demo[1]}`);
+    if (input) {
+      input.value = 'chrome 新标签页 设计';
+      input.focus();
+    }
+  }
+</script>
+
+</body>
+</html>

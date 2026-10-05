@@ -1,0 +1,233 @@
+/* ============================================================
+   本页只有「布局」和「看稿工具的外壳」两类样式，不含设计取值。
+   设计取值全部来自 tokens.css：改 <html data-style> 换风格、
+   改 data-theme="dark" 换明暗，页面结构一个字都不用动。
+
+   例外：下面 .bar 是看稿工具自己的外壳（悬浮按钮条），
+   它不属于设计稿，所以不引用语义令牌，只用基础层的灰阶。
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--gray-1000);
+  color: var(--gray-0);
+}
+
+/* ---------- 看稿工具外壳（不是设计稿的一部分） ---------- */
+.bar {
+  position: fixed;
+  inset: auto 0 16px 0;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* 看稿时可以彻底藏掉工具条：页面 hash 里带 `+bare` 就会加上这个类，
+   视觉回归测试截图用的就是这种状态（截到的是真实的新标签页，不含工具条）。 */
+.bare .bar { display: none; }
+
+.bar button {
+  padding: 8px 16px;
+  border: var(--hairline) solid var(--alpha-20);
+  border-radius: var(--r-full);
+  background: var(--gray-900);
+  color: var(--gray-100);
+  font: inherit;
+  font-size: var(--font-md);
+  cursor: pointer;
+}
+
+.bar button[aria-pressed="true"] {
+  background: var(--gray-75);
+  border-color: var(--gray-75);
+  color: var(--gray-1000);
+}
+
+.bar .sep { width: var(--hairline); margin: 4px 4px; background: var(--alpha-20); }
+
+/* ---------- 舞台 ---------- */
+.stage {
+  display: none;
+  position: relative;      /* 让设置按钮与面板锚在页面右下角 */
+  min-height: 100%;        /* 用 min-height 而不是 height：矮视口下内容才不会被裁掉 */
+  padding: 56px 64px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.stage[data-active] { display: block; }
+
+/* C 点阵的底纹（--dot / --dot-size 只有 C 和暗色下才有值） */
+.stage[data-style="grid"] {
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: var(--dot-size) var(--dot-size);
+}
+
+.head { display: flex; flex-direction: column; gap: 2px; }
+
+.clock {
+  font-size: var(--font-clock);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+}
+
+.date { font-size: var(--font-md); color: var(--text-2); }
+
+.middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  margin-top: 18vh;
+}
+
+/* ---------- 搜索框：唯一视觉重心 ---------- */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 640px;
+  max-width: 100%;
+  min-height: 56px;
+  padding: 0 20px;
+  background: var(--search-bg);
+  border: var(--search-border);
+  border-radius: var(--search-radius);
+  box-shadow: var(--search-shadow);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.search:focus-within { border-color: var(--ring); }
+
+.search svg { flex: none; width: 18px; height: 18px; color: var(--text-3); }
+
+.search .ph { flex: 1; font-size: var(--font-lg); color: var(--text-3); }
+
+.search .key {
+  flex: none;
+  padding: 2px 6px;
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ---------- 宫格 ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(5, 88px);
+  gap: 8px 0;
+  justify-content: center;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-radius: var(--r-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--dur) var(--ease);
+}
+
+.tile:hover { background: var(--tile-hover); }
+
+.fav {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: var(--tile-border);
+  font-size: var(--font-lg);
+  font-weight: var(--fw-medium);
+  color: var(--text-2);
+}
+
+.name { font-size: var(--font-sm); color: var(--text-3); }
+
+/* ---------- 设置按钮（右下角，32×32，安静到几乎看不见） ---------- */
+.settings {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.settings:hover { background: var(--tile-hover); color: var(--text-2); }
+.settings:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.settings svg { width: 18px; height: 18px; }
+.settings[aria-expanded="true"] { background: var(--tile-hover); color: var(--text-2); }
+
+/* ---------- 设置面板（浮起层：菜单圆角 12 + 发丝线 + 极轻阴影） ---------- */
+.panel {
+  position: absolute;
+  right: 32px;
+  bottom: 76px;
+  width: 300px;
+  padding: 6px;
+  background: var(--panel-bg);
+  border: var(--panel-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--panel-shadow);
+}
+
+.panel[hidden] { display: none; }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  font-size: var(--font-md);
+  transition: background var(--dur) var(--ease);
+}
+
+.row:hover { background: var(--tile-hover); }
+
+.rl { color: var(--text); }
+.rv { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
+.chev { width: 14px; height: 14px; }
+
+/* 开关做成方框勾选，不用胶囊——「圆角只有 4/12/24 三档、禁胶囊」是硬纪律 */
+.check {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.check svg { width: 12px; height: 12px; opacity: 0; transition: opacity var(--dur) var(--ease); }
+
+.check[aria-checked="true"] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.check[aria-checked="true"] svg { opacity: 1; }

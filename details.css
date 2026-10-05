@@ -1,0 +1,201 @@
+/* ============================================================
+   第三批：细节研究 —— 沿 S1「一条底线」与 S3「终端会话」两条线，
+   一次只变一个细节（字号 / 度量 / 图标 / 标签位置 / 焦点态 / 光标）。
+   A1–A5 = 一条底线血统（浅色），B1–B5 = 终端会话血统（深色）。
+   取值全部来自 tokens.css；看稿骨架在 proposals-base.css。
+   看稿工具条上方那行小字会说明"这一版变了什么"。
+   ============================================================ */
+
+html[data-p="a1"] .sheet[data-p="a1"],
+html[data-p="a2"] .sheet[data-p="a2"],
+html[data-p="a3"] .sheet[data-p="a3"],
+html[data-p="a4"] .sheet[data-p="a4"],
+html[data-p="a5"] .sheet[data-p="a5"],
+html[data-p="b1"] .sheet[data-p="b1"],
+html[data-p="b2"] .sheet[data-p="b2"],
+html[data-p="b3"] .sheet[data-p="b3"],
+html[data-p="b4"] .sheet[data-p="b4"],
+html[data-p="b5"] .sheet[data-p="b5"] { display: block; }
+
+/* ---------- 两组各自的语义令牌 ---------- */
+.sheet[data-p^="a"] {
+  --bg: var(--gray-50);
+  --surface: var(--gray-0);
+  --surface-2: var(--gray-75);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --border: var(--alpha-10);
+  --border-strong: var(--alpha-15);
+  --ring: var(--blue-500);
+}
+
+.sheet[data-p^="b"] {
+  --bg: var(--gray-900);
+  --surface: var(--gray-800);
+  --surface-2: var(--gray-700);
+  --text: var(--gray-0);
+  --text-2: var(--gray-300);
+  --text-3: var(--gray-400);
+  --border: var(--w-08);
+  --border-strong: var(--w-12);
+  --ring: var(--blue-400);
+}
+
+/* ---------- 缩略：看稿工具条上的说明行（外壳，不属于设计稿） ---------- */
+.note {
+  align-self: center;
+  padding: 0 10px;
+  color: var(--gray-150);
+  font-size: var(--font-sm);
+}
+
+/* ============================================================
+   A 血统：一条底线
+   ============================================================ */
+.d-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 100vh;
+  padding: 0 64px;
+}
+
+.a-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.a-field:focus-within,
+.a-field.is-focus { border-bottom-color: var(--ring); }
+
+/* A1 基准 / A3 无图标 / A4 焦点态 / A5 输入中 —— 度量都是 560 */
+.sheet[data-p="a1"] .a-field,
+.sheet[data-p="a3"] .a-field,
+.sheet[data-p="a4"] .a-field,
+.sheet[data-p="a5"] .a-field { width: 560px; }
+
+/* A2 只把字号与度量推大一档，比较"排版尺度"本身 */
+.sheet[data-p="a2"] .a-field { width: 640px; }
+.sheet[data-p="a2"] .a-field .q { font-size: var(--font-xl); }
+
+/* A3 把 BING 从右边挪到左边当前缀：读起来像命令行参数 */
+.sheet[data-p="a3"] .a-field .d-tag { order: -1; }
+
+/* A4 焦点态：底线加粗到 2px，图标与标签一起点亮 */
+.sheet[data-p="a4"] .a-field:focus-within,
+.sheet[data-p="a4"] .a-field.is-focus { border-bottom-width: 2px; }
+
+.a-field:focus-within .d-tag,
+.a-field.is-focus .d-tag { color: var(--text-2); }
+
+/* ---------- 本页自己的公共零件（不跨页复用，避免两个页面的样式互相牵制） ---------- */
+.d-hint {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* "输入中"的样子：截图里看不见浏览器真光标，所以细节稿把已输入的文字与光标都画出来 */
+.d-typed {
+  font-size: var(--font-lg);
+  color: var(--text);
+}
+
+.d-push { flex: 1; }
+
+/* 等宽小标签：全大写 + 宽字距，"程序"味落在字上而不是装饰上 */
+.d-tag {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+/* 画出来的光标：截图里看不见浏览器真光标，所以细节稿得自己画一个 */
+.caret {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  background: var(--text);
+}
+
+.caret-block {
+  flex: none;
+  width: 9px;
+  height: 20px;
+  background: var(--text-2);
+}
+
+/* ============================================================
+   B 血统：终端会话
+   ============================================================ */
+.b-wrap {
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0;
+  width: 720px;
+  margin: 0 auto;
+  padding: 96px 0 0;
+  font-family: var(--font-mono);
+}
+
+.b-path {
+  margin: 0 0 40px;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+.b-label {
+  margin: 0 0 40px;
+  font-size: var(--font-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+.b-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.b-line:focus-within,
+.b-line.is-focus { border-bottom-color: var(--ring); }
+
+.b-prompt {
+  flex: none;
+  font-size: var(--font-xl);
+  color: var(--text-2);
+}
+
+.b-line .q {
+  font-family: var(--font-mono);
+  font-size: var(--font-xl);
+}
+
+.b-line .d-typed {
+  font-family: var(--font-mono);
+  font-size: var(--font-xl);
+}
+
+.b-hints {
+  margin: 18px 0 0;
+  font-size: var(--font-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-3);
+}
+
+.b-foot {
+  margin: 56px 0 0;
+  font-size: var(--font-sm);
+  line-height: var(--lh-normal);
+  color: var(--text-3);
+}

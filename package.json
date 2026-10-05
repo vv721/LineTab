@@ -1,0 +1,19 @@
+{
+  "name": "linetab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LineTab 是一个新标签页扩展：页面本身零依赖、零构建、零网络请求；这里的 npm 只用来跑开发期校验与打包。",
+  "type": "module",
+  "scripts": {
+    "test:visual": "playwright test --project=chrome",
+    "test:visual:update": "playwright test --project=chrome --update-snapshots && playwright test --project=chrome",
+    "test:ext": "playwright test --project=extension",
+    "test:all": "playwright test --project=chrome && playwright test --project=extension",
+    "check": "node scripts/check-extension.mjs && node scripts/check-tokens.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "pack": "node scripts/pack.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

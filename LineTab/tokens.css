@@ -1,0 +1,188 @@
+/* ============================================================
+   令牌源 —— 本项目自己的设计令牌（已冻结）
+   来源：@openai/apps-sdk-ui@0.2.2 的 CSS 源文件，原文见 data/openai-apps-sdk-ui-0.2.2/
+   规则：页面样式里只准出现 var(--…)，禁止裸色值/裸尺寸 —— 由 stylelint.config.mjs 强制。
+   切换风格：改 <html data-style="paper|grid">
+   切换明暗：改 <html data-theme="dark">
+   ============================================================ */
+
+/* ---------- 1. 基础层：原始色阶 ---------- */
+:root {
+  /* 中性灰阶（按浅色取向命名；官方原文在深色下会把同一套名字反向取值，
+     这里为了让人一眼看懂，深色直接用十六进制写在文件末尾） */
+  --gray-0: #ffffff;
+  --gray-25: #fcfcfc;
+  --gray-50: #f9f9f9;
+  --gray-75: #f3f3f3;
+  --gray-100: #ededed;
+  --gray-150: #dfdfdf;
+  --gray-200: #cdcdcd;
+  --gray-300: #afafaf;
+  --gray-400: #8f8f8f;
+  --gray-500: #5d5d5d;
+  --gray-700: #303030;
+  --gray-800: #212121;
+  --gray-900: #181818;
+  --gray-950: #131313;
+  --gray-1000: #0d0d0d;
+
+  /* 发丝线用透明色而不是实色（官方做法：浅色 5/10/15%，深色 6/12/20%） */
+  --alpha-05: rgb(13 13 13 / 5%);
+  --alpha-08: rgb(13 13 13 / 8%);
+  --alpha-10: rgb(13 13 13 / 10%);
+  --alpha-12: rgb(13 13 13 / 12%);
+  --alpha-15: rgb(13 13 13 / 15%);
+  --alpha-20: rgb(13 13 13 / 20%);
+
+  /* 白透明度：深色版面里的发丝线与 hover 底色（官方深色取 6/12/20%）。
+     为什么必须单独有令牌：样式里不准写裸 rgb()，深色版面又不能用上面那组黑透明度。 */
+  --w-06: rgb(255 255 255 / 6%);
+  --w-08: rgb(255 255 255 / 8%);
+  --w-12: rgb(255 255 255 / 12%);
+  --w-20: rgb(255 255 255 / 20%);
+
+  /* 唯一允许出现的彩色是焦点环（B 雾青的绿点缀已随该方案一起删掉） */
+  --blue-500: #0169cc;  /* 浅色焦点环 */
+  --blue-400: #0285ff;  /* 深色焦点环 */
+
+  /* 几何与动效刻度 */
+  --hairline: 1px;
+  --r-sm: 4px;
+  --r-md: 12px;
+  --r-lg: 24px;
+  --r-full: 9999px; /* 官方 full 档；只给"看稿工具外壳"这类非设计稿元素用 */
+  --shadow-1: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --dur: 150ms;
+  --dur-blink: 1.06s;  /* 光标闪烁周期：功能性动效，不是装饰动画 */
+  --ease: cubic-bezier(.19, 1, .22, 1);
+
+  /* 字号/字重刻度（只留四档：时钟 / 面板标题级 / 面板行 / 标签）
+     之所以要令牌化：stylelint 会拦住裸 font-size，字号也必须有出处 */
+  --font-clock: 72px;
+  --font-2xl: 32px;  /* "查询本身就是主角"的超大输入 */
+  --font-xl: 17px;   /* 无框方案里"输入即主角"时用 */
+  --font-lg: 15px;
+  --font-md: 13px;
+  --font-sm: 12px;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --lh-tight: 1;
+  --lh-normal: 1.5;
+  --ls-tight: -.01em; /* 时钟这种大字号的紧字距 */
+  --ls-wide: .08em;   /* 全大写等宽小标签的字距（表单标签、终端提示） */
+
+  /* 系统字体栈（中文界面 + 零网络请求的硬约束下唯一选择） */
+  --font-ui: ui-sans-serif, -apple-system, system-ui, "Segoe UI", "Noto Sans",
+             "Microsoft YaHei", "PingFang SC", Helvetica, Arial, sans-serif;
+  /* 等宽栈：同样只用系统字体（Codex CLI 血统的方案用），中文回落到系统黑体 */
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", "Microsoft YaHei", monospace;
+
+  /* 点阵（C）的纸色与点色：全项目唯一带一点"温度"的中性色。
+     用户从 8 版候选里选定 n3（浅色：暖白纸 + 暖墨点）与 d2（深色：暖墨纸 + 暖白点）。
+     点画在底上之后的色差 Δ：n3 是 18.4、d2 是 24.1 —— 原来那个 4.5% 黑点只有 10.8，
+     用户的原话就是"点和背景的颜色太相像"。 */
+  --paper-warm: #faf7f1;
+  --ink-warm: rgb(74 63 48 / 10%);
+  --paper-ink-dark: #1b1917;
+  --ink-warm-dark: rgb(255 246 232 / 11%);
+}
+
+/* ---------- 2. 语义层：组件只准引用这一层 ---------- */
+[data-style] {
+  --bg: var(--gray-50);
+  --surface: var(--gray-0);
+  --surface-2: var(--gray-75);
+  --text: var(--gray-1000);
+  --text-2: var(--gray-500);
+  --text-3: var(--gray-400);
+  --border: var(--alpha-10);
+  --border-strong: var(--alpha-15);
+  --ring: var(--blue-500);
+
+  /* 搜索框：定稿形态是一条底线，所以下列四个令牌对定稿页已经不起作用了 ——
+     newtab.css 里的 .search 直接写底线，不再读它们。它们留着是给已归档的
+     探索页用：全仓库检索确认只有 风格预览.html 的 preview.css 还在引用，
+     设计提案.html / 设计提案二.html 都没用。删掉会让 风格预览.html 塌掉；
+     等它也不用了再一起清。 */
+  --search-bg: var(--surface);
+  --search-border: var(--hairline) solid var(--border);
+  --search-radius: var(--r-lg);
+  --search-shadow: none;
+
+  /* 宫格已经不进定稿页了（真页面只剩搜索框），这两个令牌留着是因为已归档的
+     看稿页还在用：--tile-hover 被 preview/proposals/proposals2 多处引用，
+     --tile-border 被 preview.css 引用。删掉会让那些页面塌掉。 */
+  --tile-border: var(--hairline) solid transparent;
+  --tile-hover: var(--alpha-05); /* 宫格块与设置面板的行共用同一个 hover 底色 */
+
+  /* 设置面板（浮起层，官方菜单圆角 12、发丝描边、极轻阴影）
+     为什么单独拆一个 --surface-raised：C 点阵把 --surface 定义成 transparent，
+     面板若直接复用 --surface 就会变成透明底、连点阵一起透出来（真踩过）。
+     浮起层永远是不透明的，所以它有自己的令牌。 */
+  --surface-raised: var(--surface);
+  --panel-bg: var(--surface-raised);
+  --panel-border: var(--hairline) solid var(--border);
+  --panel-shadow: var(--shadow-1);
+}
+
+/* A 纸白：零彩色，白卡片 + 发丝线，唯一彩色是焦点环 */
+[data-style="paper"] {
+  /* 全部沿用上面的默认值，这里只是把"它就是默认"这件事写明 */
+}
+
+/* C 点阵：取消卡片与描边，靠点阵托底，hover 才浮现 */
+[data-style="grid"] {
+  --bg: var(--paper-warm);
+  --surface: transparent;
+  --surface-2: var(--alpha-05);
+  --border: var(--alpha-08);
+  --border-strong: var(--alpha-12);
+
+  --search-bg: transparent;
+  --search-border: 0;
+  --search-radius: 0;
+
+  --tile-border: 0;
+  --tile-hover: var(--alpha-08);
+  --surface-raised: var(--gray-0); /* 面板必须不透明，否则点阵会从面板里透出来 */
+  --dot: var(--ink-warm);
+  --dot-size: 18px;
+}
+
+/* ---------- 3. 自动暗色：A/C 共用骨架 ---------- */
+/* 这一块只放"所有风格共有"的差异。风格专属的差异一律放到它**后面**按风格族各写一条。
+   注意：这里**不**写 --search-bg 这类风格专属令牌 —— 当初暗色选择器还带
+   `:not([data-style="night"])`（特异性 (0,2,0)）时它压掉过 [data-style] 那一层（真踩过）；
+   现在这个选择器简化成 [data-theme="dark"]（(0,1,0)），与 [data-style] 同权，
+   谁赢只取决于源码顺序，所以这条纪律更要守：暗色骨架必须留在 [data-style] 之后。
+   风格专属的暗色覆盖写成 [data-theme="dark"][data-style="xx"]（(0,2,0)），
+   比骨架多一个属性选择器、一定赢；写在骨架后面只是为了读起来顺。 */
+[data-theme="dark"] {
+  --bg: #181818;
+  --surface: #212121;
+  --surface-2: #303030;
+  --text: #ffffff;
+  --text-2: #afafaf;
+  --text-3: #8f8f8f;
+  --border: rgb(255 255 255 / 12%);
+  --border-strong: rgb(255 255 255 / 20%);
+  --ring: var(--blue-400);
+
+  /* A 的搜索框是 var(--surface)，在深色下自动变成 #212121；
+     C 定义的是 transparent（"不画卡片"是它的身份），
+     如果在这里硬写 --search-bg，特异性 (0,2,0) 会把 C 的 transparent 压掉，
+     那种风格在暗色下就长出实心搜索卡了（代码审查发现的）。 */
+  --search-border: 0; /* 深色取消描边 */
+  --tile-hover: rgb(255 255 255 / 8%);
+  --surface-raised: #303030; /* 官方深色 elevated：面板比搜索框再亮一档 */
+  --panel-border: 0;  /* 浮起层也不用描边 */
+  --shadow-1: none;   /* 深色不用阴影分层 */
+}
+
+/* C 点阵在暗色下换纸：暖墨纸 + 暖白点（用户 m02694 选定 d2）。
+   这条比上面的骨架多一个 [data-style]，特异性 (0,2,0) > (0,1,0)，一定赢。 */
+[data-theme="dark"][data-style="grid"] {
+  --bg: var(--paper-ink-dark);
+  --dot: var(--ink-warm-dark);
+}

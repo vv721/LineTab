@@ -1,0 +1,178 @@
+/* ============================================================
+   新标签页的布局：这里只写「怎么摆」，不写「长什么样」。
+   所有设计取值都来自 tokens.css —— 改 <html data-style> 换风格、
+   加 data-theme="dark" 换明暗，本文件一个字都不用动。
+   （只锁设计身份类取值：颜色/圆角/字体/阴影/动效。间距与尺寸
+     是有意保留的字面量，见 stylelint.config.mjs 的说明。）
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.page {
+  position: relative;        /* 设置按钮与面板锚在页面右下角 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;   /* 没有时钟之后，搜索框就是唯一重心：直接居中 */
+  min-height: 100%;          /* 用 min-height：矮视口下内容不会被裁掉 */
+  padding: 56px 64px;
+  background-color: var(--bg);
+}
+
+/* C 点阵的底纹（--dot / --dot-size 只有 C 与暗色下才有值） */
+[data-style="grid"] .page {
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: var(--dot-size) var(--dot-size);
+}
+
+/* 搜索框这一块（输入行 + 下方提示）宽度就是定稿的 560px。
+   .page 是 flex column + 居中，所以这里就是全页唯一的重心。 */
+.fieldbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 560px;
+  max-width: 100%;
+}
+
+/* 搜索框：全页唯一的视觉重心。定稿形态 = 一条底线，不画卡片、不带阴影、不用彩色 */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0 2px 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--hairline) solid var(--border-strong);
+  border-radius: 0;
+  box-shadow: none;
+  transition: border-bottom-color var(--dur) var(--ease);
+}
+
+/* 焦点反馈是一条设置，两种取值都是中性色：
+   line = 底线变成文字色（默认）；hold = 界面完全不动，只靠光标指示位置。 */
+[data-focus="line"] .search:focus-within { border-bottom-color: var(--text); }
+[data-focus="hold"] .search:focus-within { border-bottom-color: var(--border-strong); }
+
+/* 左侧元素也是一条设置：放大镜（默认）与 `>` 提示符互斥显示 */
+.search .ico { flex: none; width: 18px; height: 18px; color: var(--text-3); }
+
+.search .prompt {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-lg);
+  color: var(--text-3);
+}
+
+[data-lead="prompt"] .search .ico { display: none; }
+[data-lead="icon"] .search .prompt { display: none; }
+
+/* 输入框自己不带任何外观，全部交给外层的 .search */
+.q {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--font-lg);
+  line-height: var(--lh-normal);
+  caret-color: var(--text);   /* C1：与文字同色的细光标 */
+  outline: none;
+}
+
+.q::placeholder { color: var(--text-3); }
+
+/* 右侧这条跟着默认引擎走（原来的 "/" 键提示挪到下面那行 .hint 里了） */
+.search .tag {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  letter-spacing: var(--ls-wide);
+  color: var(--text-3);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ---------- 右下角：设置按钮 ---------- */
+.settings {
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.settings:hover { background: var(--tile-hover); color: var(--text-2); }
+.settings:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.settings[aria-expanded="true"] { background: var(--tile-hover); color: var(--text-2); }
+.settings svg { width: 18px; height: 18px; }
+
+/* ---------- 设置面板（浮起层） ---------- */
+.panel {
+  position: absolute;
+  right: 32px;
+  bottom: 76px;
+  width: 300px;
+  padding: 6px;
+  background: var(--panel-bg);
+  border: var(--panel-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--panel-shadow);
+}
+
+.panel[hidden] { display: none; }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  font-size: var(--font-md);
+  transition: background var(--dur) var(--ease);
+}
+
+.row:hover { background: var(--tile-hover); }
+.rl { color: var(--text); }
+
+.rv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-md);
+  cursor: pointer;
+}
+
+.rv:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.chev { width: 14px; height: 14px; }
