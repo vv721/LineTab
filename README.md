@@ -2,7 +2,24 @@
 
 这是「按 Codex 系设计语言做一款原创风格的新标签页扩展」这个任务的工作目录。当前状态：**需求已冻结；设计已收敛出定稿形态并落进真页面 [LineTab/newtab.html](LineTab/newtab.html)（一条底线 + 无时钟 + 不要快捷方式宫格）；扩展化已完成 —— 运行文件都在 [LineTab/](LineTab/) 一个目录里，`chrome://extensions` 选中它就能用，设置真的存进 `chrome.storage.sync`，扩展测试 T1–T8（8 条）、视觉套件 23 条、`npm run check`、`npm run pack` 全绿。**风格族按 `m02255` 收敛为两套：A 纸白 + C 点阵（B 雾青、D 夜墨已删）；C 的点阵配色按 `m02694` 定案 —— 浅色 n3 暖白纸（`#faf7f1` + `rgb(74 63 48 / 10%)` / 18px）、暗色 d2 暖墨纸（`#1b1917` + `rgb(255 246 232 / 11%)` / 18px）。**基线已定：默认 A 纸白**（`m03457`），C 点阵保留在面板「风格」行里给用户切 —— 两套都是正式功能。
 
-**目录约定**：`LineTab/` = 扩展本体（11 个运行文件，装载与打包都只认它，里面不放任何别的东西）；本目录其余内容是文档、探索页、脚本与中间产物，**不进安装包**。
+**目录约定**：`LineTab/` = 扩展本体（11 个运行文件，装载与打包都只认它，里面不放任何别的东西）；`DesignReference/` = **用户放进来**的设计规范（只读输入）；本目录其余内容是文档、探索页、脚本与中间产物，**不进安装包**。
+
+## 设计规范（用户提供，`DesignReference/`）
+
+`DesignReference/` 里是用户放进来的设计规范，**一份文件 = 一整套风格**，不要改写它们：
+
+| 文件 | 风格 | 一句话特征 |
+| --- | --- | --- |
+| [DesignReference/DESIGN-apple.md](DesignReference/DESIGN-apple.md) | Apple（`Apple-design-analysis`） | 摄影优先的画廊式编排：白 / 羊皮纸 `#f5f5f7` 画布、SF Pro Display 大标题（负字距）、唯一的交互色 Action Blue `#0066cc`；chrome 退场、无装饰渐变、无阴影（只有产品图下那一道签名投影） |
+| [DesignReference/DESIGN-claude.md](DesignReference/DESIGN-claude.md) | Claude / Anthropic（`Claude-design-analysis`） | 暖奶油画布 `#faf9f5` + 珊瑚色 CTA `#cc785c` + 深色产品面板；标题走衬线（Copernicus / Tiempos Headline）、正文走人文无衬线 —— 刻意"暖、有人味"，与 AI 品牌常见的冷蓝 + 石板灰相反 |
+
+两份规范的骨架相同（YAML 令牌块 → Overview / Colors / Typography / Layout / Elevation & Depth / Shapes / Components / Do's and Don'ts / Responsive / Iteration Guide / Known Gaps），所以**要照哪一套做就整份读完那一份**。
+
+**使用规则**（与根目录 [AGENTS.md](../AGENTS.md) 第 8 节一致）：
+
+- 只有用户**明确点名**某一套时才读那一份，并**严格按它做** —— 取值都要能指回规范里的具体条目。
+- **一次只用一套，绝不混用**：不出现"这套的配色 + 那套的圆角"这类拼盘。用户没点名就先问是哪一套。
+- 规范与既有约束（本项目风格纪律、令牌单一来源 `tokens.css`、stylelint 白+黑名单）**冲突时先说明冲突**，由用户裁决，不私自取舍。
 
 ## 怎么装（本地装载，现在就能用）
 
