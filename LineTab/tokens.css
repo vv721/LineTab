@@ -2,7 +2,7 @@
    令牌源 —— 本项目自己的设计令牌（已冻结）
    来源：@openai/apps-sdk-ui@0.2.2 的 CSS 源文件，原文见 data/openai-apps-sdk-ui-0.2.2/
    规则：页面样式里只准出现 var(--…)，禁止裸色值/裸尺寸 —— 由 stylelint.config.mjs 强制。
-   切换风格：改 <html data-style="paper|grid">
+   切换风格：改 <html data-style="paper|grid|clay">
    切换明暗：改 <html data-theme="dark">
    ============================================================ */
 
@@ -119,10 +119,10 @@
   --paper-ink-dark: #1b1917;
   --ink-warm-dark: rgb(255 246 232 / 11%);
 
-  /* 【临时·暖陶】下面这组暖色与珊瑚色，取自用户提供的 DesignReference/DESIGN-claude.md
+  /* 暖陶（第三套风格）用的暖色与珊瑚色，取自用户提供的 DesignReference/DESIGN-claude.md
      （Claude / Anthropic 那套设计语言的取值清单），一个值对一个条目，不凭印象补。
-     它们现在只给 Preview.html 的暖陶那一套用（纸白 / 点阵 用不到珊瑚色），真页面（newtab.js 的 STYLES）里还没有这套风格，
-     所以对 纸白 / 点阵 是惰性的。用户定案后再决定留用或整段删掉。 */
+     纸白 / 点阵 用不到珊瑚色，所以这组值对它们是惰性的；
+     暖陶已按用户 m00693 从看稿页全量同步进正式页（newtab.js 的 STYLES 里有 clay）。 */
   --cream-50: #faf9f5;          /* colors.canvas：奶油画布，规范里最定义品牌的那个值 */
   --cream-100: #f5f0e8;         /* colors.surface-soft */
   --cream-200: #efe9de;         /* colors.surface-card：内容卡与浮起层 */
@@ -320,9 +320,9 @@
   --panel-bg: var(--w-06); /* 深底上那块淡墨反过来是"提亮"：暖白点透过它看得见 */
 }
 
-/* ---------- 4.【临时】第三套风格候选：暖陶（data-style="clay"） ----------
-   按用户 m02818 的裁决，它先只加进 Preview.html（那页原本是 纸白 / 点阵 两套舞台），
-   真页面 newtab.js 的 STYLES 里还没有它 —— 所以这一段对 纸白 / 点阵 完全惰性，定案后再搬进 §2 正式区。
+/* ---------- 4. 第三套风格：暖陶（data-style="clay"） ----------
+   它最初只在 Preview.html 里（用户 m02818），用户 m00693 要求"看稿页的全部设计内容同步进扩展本体"，
+   于是这一套连同它的配色一起进了正式页 —— newtab.js 的 STYLES 里已有 clay。
    取值全部指回 DesignReference/DESIGN-claude.md，一值一条目：
      canvas→--cream-50　surface-soft→--cream-100　surface-card→--cream-200
      ink→--warm-ink　muted→--warm-muted　muted-soft→--warm-muted-soft

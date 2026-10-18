@@ -12,7 +12,10 @@
 </head>
 <body>
   <main class="page">
-    <div class="fieldbox">
+    <div class="fieldbox" id="fieldbox">
+      <!-- 引导语：框架的一部分（三套共用同一组字号 / 间隔 / 位置，见 tokens.css 的 --mark-*），
+           皮肤只决定这张脸（--font-display：界面字 / 等宽 / 衬线）。 -->
+      <p class="mark" id="mark" aria-hidden="true">Type something</p>
       <form class="search" id="search" role="search">
         <!-- 左边两个元素互斥显示：放大镜是默认的，`>` 是设置里可切换的 -->
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -21,14 +24,18 @@
           <path d="M16 16l4.5 4.5"></path>
         </svg>
         <span class="prompt" aria-hidden="true">&gt;</span>
-        <!-- autofocus 是 Chrome 官方绕过的一半（另一半是 focus.html 那一跳）：
+        <!-- 输入框里不放占位文案（用户 m01021：引导语已经说了该说什么，框里再写一遍是重复），
+             可访问名留在 aria-label 上。
+             autofocus 是 Chrome 官方绕过的一半（另一半是 focus.html 那一跳）：
              页面被当成"覆盖页的第二个文档"加载之后，它才真的能把光标留在输入框里 -->
         <input class="q" id="q" type="text" autocomplete="off" spellcheck="false" autofocus
-               placeholder="搜索" aria-label="搜索">
-        <!-- 右边这条跟着默认引擎走：输入 "g 关键词" 仍可临时改用 Google -->
-        <span class="tag" id="engine-tag">BING</span>
+               aria-label="搜索">
+        <!-- 引擎名这一格是快捷切换的开关：点它 = 走到下一个复选着的引擎。
+             仍是 <span>（不是 <button>）—— button 在这个 <form> 里会触发提交。
+             标签里写的是内容（句子形 `Bing`），大写在 CSS 里按皮肤给。 -->
+        <span class="tag" id="engine-tag" role="button" tabindex="0"
+              aria-label="切换搜索引擎">Bing</span>
       </form>
-      <p class="hint" id="hint">g 前缀改用 Google 搜索 · / 聚焦</p>
     </div>
 
     <button class="settings" id="settings" type="button"
@@ -44,7 +51,8 @@
     <div class="panel" id="panel" role="dialog" aria-label="设置" hidden>
       <div class="row">
         <span class="rl" id="engine-label">默认搜索引擎</span>
-        <button class="rv" id="engine" type="button" aria-labelledby="engine-label">
+        <button class="rv" id="engine" type="button" aria-labelledby="engine-label"
+                aria-haspopup="listbox" aria-expanded="false">
           <span id="engine-value">Bing</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -54,7 +62,8 @@
       </div>
       <div class="row">
         <span class="rl" id="lead-label">搜索框左侧</span>
-        <button class="rv" id="lead" type="button" aria-labelledby="lead-label">
+        <button class="rv" id="lead" type="button" aria-labelledby="lead-label"
+                aria-haspopup="listbox" aria-expanded="false">
           <span id="lead-value">放大镜</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -64,7 +73,8 @@
       </div>
       <div class="row">
         <span class="rl" id="focus-label">焦点反馈</span>
-        <button class="rv" id="focus" type="button" aria-labelledby="focus-label">
+        <button class="rv" id="focus" type="button" aria-labelledby="focus-label"
+                aria-haspopup="listbox" aria-expanded="false">
           <span id="focus-value">深灰细线</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -74,7 +84,8 @@
       </div>
       <div class="row">
         <span class="rl" id="dark-label">暗色</span>
-        <button class="rv" id="dark" type="button" aria-labelledby="dark-label">
+        <button class="rv" id="dark" type="button" aria-labelledby="dark-label"
+                aria-haspopup="listbox" aria-expanded="false">
           <span id="dark-value">跟随系统</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -84,7 +95,8 @@
       </div>
       <div class="row">
         <span class="rl" id="style-label">风格</span>
-        <button class="rv" id="style" type="button" aria-labelledby="style-label">
+        <button class="rv" id="style" type="button" aria-labelledby="style-label"
+                aria-haspopup="listbox" aria-expanded="false">
           <span id="style-value">纸白</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -92,8 +104,71 @@
           </svg>
         </button>
       </div>
+
+      <!-- 下面 5 行是"引导语参数"：三套共用同一组取值，滑块改的是本页的行内样式
+           （值等于令牌默认值就清掉，所以设计取值仍然只有 tokens.css 一个来源）。
+           拖动即时生效、松手才落盘（input 画、change 存）。 -->
+      <div class="row-sep"></div>
+      <div class="row row-param">
+        <label class="rl" for="mark-size">引导语字号</label>
+        <span class="rs">
+          <input id="mark-size" type="range" min="20" max="64" step="1" value="41" data-param="size">
+          <output for="mark-size">41px</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-gap">与线的间隔</label>
+        <span class="rs">
+          <input id="mark-gap" type="range" min="0" max="72" step="1" value="55" data-param="gap">
+          <output for="mark-gap">55px</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-align">引导语对齐</label>
+        <span class="rs">
+          <input id="mark-align" type="range" min="0" max="2" step="1" value="1" data-param="align">
+          <output for="mark-align">居中</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-dy">整组竖直</label>
+        <span class="rs">
+          <input id="mark-dy" type="range" min="-40" max="40" step="1" value="-12" data-param="dy">
+          <output for="mark-dy">-12%</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-dx">搜索线偏移</label>
+        <span class="rs">
+          <input id="mark-dx" type="range" min="-120" max="120" step="1" value="0" data-param="dx">
+          <output for="mark-dx">0px</output>
+        </span>
+      </div>
     </div>
   </main>
+
+  <!-- 自定义搜索引擎弹窗：三套共用。保存会把它加成一条真引擎、并设为当前引擎。
+       遮罩点一下关、Esc 关一层；保存按钮在"名称非空且地址里含 %s"之前一直是 disabled。 -->
+  <div class="dlg-back" id="dlg-back" hidden>
+    <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+      <h2 class="dlg-title" id="dlg-title">自定义搜索引擎</h2>
+      <label class="dlg-field">
+        <span class="dlg-label">名称</span>
+        <input class="dlg-input" id="dlg-name" type="text" data-dlg-name autocomplete="off"
+               spellcheck="false" placeholder="例如 知乎" aria-label="搜索引擎名称">
+      </label>
+      <label class="dlg-field">
+        <span class="dlg-label">搜索地址</span>
+        <input class="dlg-input" id="dlg-url" type="text" data-dlg-url autocomplete="off"
+               spellcheck="false" placeholder="例如 zhihu.com/search?q=%s" aria-label="搜索地址">
+      </label>
+      <p class="dlg-note">用 <code>%s</code> 占位查询词 —— 你输入什么，就把什么发过去。只写域名也行，保存时自动补 https 协议。</p>
+      <div class="dlg-actions">
+        <button class="dlg-btn" id="dlg-cancel" type="button" data-dlg-cancel>取消</button>
+        <button class="dlg-btn dlg-btn-primary" id="dlg-save" type="button" data-dlg-save disabled>保存</button>
+      </div>
+    </div>
+  </div>
 
   <script src="newtab.js"></script>
 </body>

@@ -87,6 +87,26 @@ async function openNewTab(context) {
   return { page, id: url.host, base: `${url.protocol}//${url.host}` };
 }
 
+/* 二级菜单：行按钮只负责开菜单，改设置要点菜单项（与 Preview 同一套交互）。 */
+function rowOf(page, id) {
+  return page.locator('#panel .row').filter({ has: page.locator('#' + id) });
+}
+
+async function choose(page, id, value) {
+  await page.locator('#' + id).click();
+  const row = rowOf(page, id);
+  const option = row.locator('.menu-opt[data-value="' + value + '"]');
+  await expect(option).toBeVisible();
+  const wasOn = id === 'engine' ? await option.getAttribute('aria-selected') : null;
+  await option.click();
+  if (id === 'engine') {
+    // 引擎那行是多选：点一下是"翻面"，且菜单特意不收起 —— 认出翻面再按 Esc 收
+    await expect(option).toHaveAttribute('aria-selected', wasOn === 'true' ? 'false' : 'true');
+    await page.keyboard.press('Escape');
+  }
+  await expect(row.locator('.menu')).toBeHidden();
+}
+
 test('T1 覆盖了新标签页：chrome://newtab/ 会跳到扩展页', async () => {
   const context = await launch(freshProfile('t1'));
   try {
@@ -107,9 +127,12 @@ test('T2 页面结构与自动聚焦：真的能直接打字', async () => {
     // 打开就聚焦在搜索框 —— 这是"新标签页"最该有的一条
     await expect(page.locator('#q')).toBeFocused();
 
-    // 面板结构与网页版一致：5 行设置
-    await expect(page.locator('#panel .row')).toHaveCount(5);
-    await expect(page.locator('#engine-tag')).toHaveText('BING');
+    // 面板结构与网页版一致：5 行设置 + 分隔线 + 5 行引导语参数
+    await expect(page.locator('#panel .row')).toHaveCount(10);
+    await expect(page.locator('#panel .row-param')).toHaveCount(5);
+    await expect(page.locator('#engine-tag')).toHaveText('Bing');
+    // 引导语（Type something）已经在发布形态里
+    await expect(page.locator('#mark')).toHaveText('Type something');
 
     // 权限只有"存储"：页面上真的能用到 chrome.storage.sync
     const hasSync = await page.evaluate(() => typeof chrome !== 'undefined' && !!chrome.storage && !!chrome.storage.sync);
@@ -150,7 +173,8 @@ test('T3 回车真的会带着关键词跳去搜索引擎（Bing / Google 都对
     // 回到新标签页，面板里把默认引擎换成 Google，再搜一次
     await page.goto(`${base}/newtab.html`, { waitUntil: 'domcontentloaded' });
     await page.locator('#settings').click();
-    await page.locator('#engine').click();
+    /* 内置两条默认都勾着（Bing 是当前值）。取消 Bing，当前引擎会自动落到 Google。 */
+    await choose(page, 'engine', 'bing');
     await expect(page.locator('#engine-value')).toHaveText('Google');
     await page.locator('#q').fill('天气');
     await page.press('#q', 'Enter');
@@ -173,7 +197,7 @@ test('T4 设置写进 chrome.storage.sync，重开浏览器仍然生效', async 
   try {
     const { page } = await openNewTab(context);
     await page.locator('#settings').click();
-    await page.locator('#lead').click();
+    await choose(page, 'lead', 'prompt');
     await expect(page.locator('html')).toHaveAttribute('data-lead', 'prompt');
 
     // saveSettings() 有 200ms 合并窗口，等它真的写进去再验证
@@ -265,7 +289,7 @@ test('T7 合并窗口内关页：改动由本地镜像保住（两份存储取�
     await page.evaluate(([key, v]) => chrome.storage.sync.set({ [key]: v }), [STORE_KEY, STALE]);
     await page.clock.install(); // 冻结计时器：200ms 的合并永远不会到点
     await page.locator('#settings').click();
-    await page.locator('#style').click(); // 切到 点阵 → 只写进了本地镜像
+    await choose(page, 'style', 'grid'); // 切到 点阵 → 只写进了本地镜像
     await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
     // 负面控制：sync 里还是那份旧的，说明这次改动确实没发出去
     const before = await page.evaluate((key) => chrome.storage.sync.get(key), STORE_KEY);
@@ -296,7 +320,7 @@ test('T8 改完设置立刻离开页面：pagehide 会把没发出去的写入�
     await page.evaluate(([key, v]) => chrome.storage.sync.set({ [key]: v }), [STORE_KEY, STALE]);
     await page.clock.install();
     await page.locator('#settings').click();
-    await page.locator('#style').click();
+    await choose(page, 'style', 'grid');
     await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
 
     /* 只留 sync 这一条路：镜像先清掉，再真的导航走（等同"改完马上回车去搜索"）。
@@ -336,7 +360,7 @@ test('T9 发布形态也挂着逐色过场：换肤中途真的在插值，首�
 
     // 走真实面板：设置 → 风格：纸白 → 点阵
     await page.locator('#settings').click();
-    await page.locator('#style').click();
+    await choose(page, 'style', 'grid');
     await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
 
     const seen = await page.evaluate(() => new Promise((resolve) => {
