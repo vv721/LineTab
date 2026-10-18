@@ -903,7 +903,7 @@ function closeDialog(returnFocus = true) {
   el.dlgBack.hidden = true;
   if (!returnFocus) return;
   if (dlgReturn && dlgReturn.offsetParent !== null) dlgReturn.focus();
-  else el.q.focus();
+  else el.settings.focus();   // 开弹窗那一行已经不在了：交回齿轮，别把光标塞回搜索框
 }
 
 function saveDialog() {
@@ -926,12 +926,12 @@ function saveDialog() {
 function openPanel(open) {
   el.panel.hidden = !open;
   el.settings.setAttribute('aria-expanded', String(open));
-  if (!open) {
-    closeMenus();
-    return;
-  }
-  /* 打开面板不改变"能直接打字"这件事：焦点仍留在搜索框（与看稿页一致） */
-  el.q.focus();
+  if (open) return;
+  closeMenus();
+  /* 关面板时焦点正停在面板里的某个按钮上，它会跟着 hidden 一起消失、掉到 body。
+     交回给打开面板的齿轮按钮 —— 这是「焦点从哪来回哪去」，不是把光标塞回搜索框
+     （用户 m01157：光标的来源只该有两种，新标签页自动、点搜索框）。 */
+  if (el.panel.contains(document.activeElement)) el.settings.focus();
 }
 
 function bindEvents() {
@@ -951,7 +951,11 @@ function bindEvents() {
     openPanel(false);
   });
 
-  /* 引擎标签 = 轮切开关：点一下走到下一个勾着的引擎 */
+  /* 引擎标签 = 轮切开关：点一下走到下一个勾着的引擎。
+     点它不搬焦点：mousedown 的默认动作会把这个 span 聚焦，.search 的 :focus-within
+     随即亮起（看着像「点了按钮唤醒焦点反馈」），输入框里的光标也跟着没了。
+     拦掉聚焦，光标留在原处，点完还能接着打字。 */
+  el.engineTag.addEventListener('mousedown', (event) => event.preventDefault());
   el.engineTag.addEventListener('click', () => rotateEngine(1));
   el.engineTag.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -1004,7 +1008,6 @@ function bindEvents() {
       }
       if (!el.panel.hidden) {
         openPanel(false);
-        el.q.focus();
         return;
       }
       el.q.blur();
@@ -1012,12 +1015,8 @@ function bindEvents() {
     }
     if (inDialog || openMenuKey) return;   // 弹窗与菜单里的键由它们自己处理
 
-    if (event.key === '/' && !typing) {
-      event.preventDefault();
-      el.q.focus();
-      return;
-    }
-    // 数字键 1–3 切风格、d 切明暗：都是正式快捷键
+    /* 原来这里有一条 `/` 聚焦搜索框的快捷键，m01157 去掉了：光标的来源只留两种
+       （新标签页自动、点搜索框）。数字键 1–3 切风格、d 切明暗：都是正式快捷键 */
     if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
     if (event.key >= '1' && event.key <= String(STYLES.length)) {
       if (!setSetting('style', STYLES[Number(event.key) - 1].id)) return;
@@ -1138,8 +1137,15 @@ async function init() {
     return;
   }
   el.q.focus();
+  /* 这条只补「刚打开就已经被 Chrome 交给地址栏」那一拍：用户一动手（点或按键）就解除。
+     否则按 Esc 放掉光标后，切回标签页又会把光标塞回搜索框 —— 而光标的来源只该有两种
+     （用户 m01157：新标签页自动、点搜索框）。 */
+  let autoFocusArmed = true;
+  const disarmAutoFocus = () => { autoFocusArmed = false; };
+  document.addEventListener('pointerdown', disarmAutoFocus, { once: true, capture: true });
+  document.addEventListener('keydown', disarmAutoFocus, { once: true, capture: true });
   window.addEventListener('focus', () => {
-    if (document.activeElement === document.body) el.q.focus();
+    if (autoFocusArmed && document.activeElement === document.body) el.q.focus();
   });
 }
 

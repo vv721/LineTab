@@ -1,5 +1,5 @@
 // ============================================================
-// 扩展本身能不能用（T1–T9）：真的把 newtab-extension 装进浏览器再验。
+// 扩展本身能不能用（T1–T10）：真的把 newtab-extension 装进浏览器再验。
 //
 // 为什么不在这儿做像素比对：这个 project 用的是 Playwright 自带的那份 Chromium，
 // 与你本机 Chrome 的渲染不保证逐像素一致 —— 视觉的事交给 chrome project（channel: 'chrome'）。
@@ -385,6 +385,63 @@ test('T9 发布形态也挂着逐色过场：换肤中途真的在插值，首�
     await page.waitForTimeout(500);
     const radius = await page.locator('#panel').evaluate((n) => getComputedStyle(n).borderTopLeftRadius);
     expect(radius).toBe('4px');
+  } finally {
+    await context.close();
+  }
+});
+
+/* 光标的来源（用户 m01157）：只该有两种 —— 新标签页自动、点搜索框。
+   面板开合、点右侧引擎标签都不该动它。 */
+test('T10 光标只从两个地方来：新标签页自动、点搜索框', async () => {
+  const context = await launch(freshProfile('t10'));
+  try {
+    const { page } = await openNewTab(context);
+
+    // ① 新标签页自动拿光标
+    await expect(page.locator('#q')).toBeFocused();
+
+    // ② 开面板：焦点落在齿轮上，搜索框不抢回去
+    await page.locator('#settings').click();
+    await expect(page.locator('#panel')).toBeVisible();
+    await expect(page.locator('#settings')).toBeFocused();
+    await expect(page.locator('#q')).not.toBeFocused();
+
+    // 关面板：焦点回到齿轮，仍然不碰搜索框
+    await page.locator('#settings').click();
+    await expect(page.locator('#panel')).toBeHidden();
+    await expect(page.locator('#settings')).toBeFocused();
+    await expect(page.locator('#q')).not.toBeFocused();
+
+    // ③ 点搜索框 = 第二种来源（也是唯一的“用户主动要打字”信号）
+    await page.locator('#q').click();
+    await expect(page.locator('#q')).toBeFocused();
+
+    // 点右侧引擎标签轮切：光标留在输入框，标签自己不吃焦点
+    await page.locator('#engine-tag').click();
+    await expect(page.locator('#q')).toBeFocused();
+    await expect(page.locator('#engine-tag')).not.toBeFocused();
+    await page.keyboard.type('天气');
+    await expect(page.locator('#q')).toHaveValue('天气');
+
+    // Esc 放掉光标之后不再自己回来（窗口 focus 那条兜底只对"刚打开"有效）
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#q')).not.toBeFocused();
+
+    // 键盘操作路径还在：Tab 到齿轮、回车开面板，焦点不会掉到 body
+    await page.locator('#settings').focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#panel')).toBeVisible();
+    await expect(page.locator('#settings')).toBeFocused();
+    await page.locator('#engine').click();
+    // 行按钮只开菜单：焦点交给当前那一项（引擎是多选，aria-selected 会有两项，按 :focus 认）
+    await expect(rowOf(page, 'engine').locator('.menu-opt:focus')).toHaveCount(1);
+    // 两级 Esc：先收菜单（焦点回行按钮），再收面板（焦点回齿轮）
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#engine')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#panel')).toBeHidden();
+    await expect(page.locator('#settings')).toBeFocused();
+    await expect(page.locator('#q')).not.toBeFocused();
   } finally {
     await context.close();
   }
