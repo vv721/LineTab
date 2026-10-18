@@ -10,7 +10,7 @@
 /* ---------- 1. 常量 ---------- */
 const STORE_KEY = 'newtab.settings';
 const DEFAULTS = {
-  style: 'paper',        // 默认 A 纸白；另一套 C 点阵在面板「风格」里切
+  style: 'paper',        // 默认 纸白；另一套 点阵在面板「风格」里切
   engine: 'bing',        // 默认搜索引擎
   lead: 'icon',          // 搜索框左侧元素：icon = 放大镜，prompt = ">" 提示符
   focus: 'line',         // 焦点反馈：line = 底线变文字色，hold = 界面不动（只靠光标指示）
@@ -24,8 +24,8 @@ const ENGINES = {
 
 /* 只留两套风格族（B 雾青与 D 夜墨已按用户要求删除，见 tokens.css 末尾的说明） */
 const STYLES = [
-  { id: 'paper', name: 'A 纸白' },
-  { id: 'grid', name: 'C 点阵' },
+  { id: 'paper', name: '纸白' },
+  { id: 'grid', name: '点阵' },
 ];
 
 /* 左侧元素与焦点反馈：口味问题，都做成设置项，默认值就是定稿那一组 */
@@ -357,10 +357,10 @@ function bindEvents() {
 
 /* ---------- 8. 启动 ---------- */
 /* 支持用地址栏 hash 直接摆好状态，方便出图和对比，例如：
-   newtab.html#grid              —— C 点阵
-   newtab.html#grid+dark+panel   —— C 点阵 + 常暗 + 面板
-   newtab.html#grid+prompt+hold  —— C 点阵 + `>` 左侧元素 + 焦点时界面不动
-   newtab.html#grid+auto         —— C 点阵 + 跟随系统（看暗色下点阵还在不在）
+   newtab.html#grid              —— 点阵
+   newtab.html#grid+dark+panel   —— 点阵 + 常暗 + 面板
+   newtab.html#grid+prompt+hold  —— 点阵 + `>` 左侧元素 + 焦点时界面不动
+   newtab.html#grid+auto         —— 点阵 + 跟随系统（看暗色下点阵还在不在）
    注意：这里只写进 overrides（本次显示），不落盘。 */
 function applyHashOverrides() {
   const parts = decodeURIComponent(window.location.hash.replace(/^#/, '')).split('+');

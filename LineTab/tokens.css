@@ -50,15 +50,37 @@
   --r-sm: 4px;
   --r-md: 12px;
   --r-lg: 24px;
-  --r-full: 9999px; /* 官方 full 档；只给"看稿工具外壳"这类非设计稿元素用 */
+  --r-full: 9999px; /* 官方 full 档；滑块轨道与圆点用它（点阵覆写成 2px 方头），看稿工具外壳也用它 */
   --shadow-1: 0 1px 2px -1px rgb(0 0 0 / 8%);
   --dur: 150ms;
   --dur-blink: 1.06s;  /* 光标闪烁周期：功能性动效，不是装饰动画 */
+  /* 亮暗切换的过场时长：换肤是"整块材质在变色"，比 hover 的 150ms 慢一档才像物理过程。
+     细节体验台 05 节的三种过场都拿它当唯一时长来源（JS 也从 CSS 读它，
+     所以慢放 / 关动效只需要改这一个值，不会出现"CSS 慢、JS 还是老节拍"的分叉）。 */
+  --dur-theme: 420ms;
   --ease: cubic-bezier(.19, 1, .22, 1);
+  /* 两头慢、中间快的一条对称曲线。给"两种颜色要互换"的过场用：
+     亮暗互换时，墨迹与底色必然在某一刻撞上同一个灰度（这是插值的几何必然），
+     让这一刻落在斜率最大的地方，撞上的窗口就只有一两帧。
+     注意 P2 必须等于 (1-x1, 1-y1) 才是关于 (0.5, 0.5) 中心对称的 ——
+     只有中心对称，走完一半时间才正好走完一半颜色（写错过一次，实测 52% 时刻已经走完 75%）。
+     目前只有 细节体验.html 的 05 节（D1 / D2）在用。 */
+  --ease-mid: cubic-bezier(.45, 0, .55, 1);
 
   /* 字号/字重刻度（只留四档：时钟 / 面板标题级 / 面板行 / 标签）
      之所以要令牌化：stylelint 会拦住裸 font-size，字号也必须有出处 */
   --font-clock: 72px;
+  /* Claude 规范的 display 刻度（28 / 36 / 48，一律 400 字重 + 负字距）。
+     这三个锚点本身没有消费者，但「引导语字号」那个设置项的滑块范围正好覆盖它们
+     —— 留着当刻度参照，别当死代码删。 */
+  --font-display-lg: 48px;
+  --font-display-md: 36px;
+  --font-display-sm: 28px;
+  /* 引导语（取代引擎品牌标的那句 "Type something"）的默认字号。
+     用户 m03467 把框架与皮肤分开：引导语、那 5 个参数、提示行都属于**框架**，
+     三套共用同一组默认值，取的就是当初在暖陶里挑定的这套（41px / 55px / 居中 / −12% / 0）。
+     41px 落在暖陶规范 36 / 48 两个锚点之间；它同时是 --mark-size（见下面的引导语那一组）。 */
+  --font-mark: 41px;
   --font-2xl: 32px;  /* "查询本身就是主角"的超大输入 */
   --font-xl: 17px;   /* 无框方案里"输入即主角"时用 */
   --font-lg: 15px;
@@ -66,6 +88,7 @@
   --font-sm: 12px;
   --fw-regular: 400;
   --fw-medium: 500;
+  --fw-semibold: 600; /* 苹果字重阶梯只有 300/400/600/700，display 档用 600 */
   --lh-tight: 1;
   --lh-normal: 1.5;
   --ls-tight: -.01em; /* 时钟这种大字号的紧字距 */
@@ -78,7 +101,16 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                "Liberation Mono", "Microsoft YaHei", monospace;
 
-  /* 点阵（C）的纸色与点色：全项目唯一带一点"温度"的中性色。
+  /* 衬线栈：给「暖陶」那套风格用（规范要求 display 走衬线 Copernicus / Tiempos
+     Headline，不可用时按它的 Note on Font Substitutes 取衬线近似）。
+     本项目硬约束是零网络请求、只用系统字体，所以这里排的是系统衬线：
+     中文优先思源宋体一类，拉丁依次试规范点名的 EB Garamond / Cormorant Garamond，
+     再落到 Iowan Old Style / Georgia，老机器最后是 Times / 宋体。 */
+  --font-serif: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC",
+                "EB Garamond", "Cormorant Garamond",
+                "Iowan Old Style", Georgia, "Times New Roman", SimSun, serif;
+
+  /* 点阵的纸色与点色：全项目唯一带一点"温度"的中性色。
      用户从 8 版候选里选定 n3（浅色：暖白纸 + 暖墨点）与 d2（深色：暖墨纸 + 暖白点）。
      点画在底上之后的色差 Δ：n3 是 18.4、d2 是 24.1 —— 原来那个 4.5% 黑点只有 10.8，
      用户的原话就是"点和背景的颜色太相像"。 */
@@ -86,6 +118,26 @@
   --ink-warm: rgb(74 63 48 / 10%);
   --paper-ink-dark: #1b1917;
   --ink-warm-dark: rgb(255 246 232 / 11%);
+
+  /* 【临时·暖陶】下面这组暖色与珊瑚色，取自用户提供的 DesignReference/DESIGN-claude.md
+     （Claude / Anthropic 那套设计语言的取值清单），一个值对一个条目，不凭印象补。
+     它们现在只给 Preview.html 的暖陶那一套用（纸白 / 点阵 用不到珊瑚色），真页面（newtab.js 的 STYLES）里还没有这套风格，
+     所以对 纸白 / 点阵 是惰性的。用户定案后再决定留用或整段删掉。 */
+  --cream-50: #faf9f5;          /* colors.canvas：奶油画布，规范里最定义品牌的那个值 */
+  --cream-100: #f5f0e8;         /* colors.surface-soft */
+  --cream-200: #efe9de;         /* colors.surface-card：内容卡与浮起层 */
+  --cream-300: #e8e0d2;         /* colors.surface-cream-strong：被选中/被强调的那一档 */
+  --coral-500: #cc785c;         /* colors.primary：唯一的彩色 */
+  --coral-15: rgb(204 120 92 / 15%); /* components.text-input-focused 的「3px 珊瑚 15% 外环」 */
+  --warm-ink: #141413;          /* colors.ink */
+  --warm-muted: #6c6a64;        /* colors.muted */
+  --warm-muted-soft: #8e8b82;   /* colors.muted-soft */
+  --hairline-warm: #e6dfd8;     /* colors.hairline（规范里与 colors.primary-disabled 同值） */
+  --dark-warm: #181715;         /* colors.surface-dark */
+  --dark-warm-soft: #1f1e1b;    /* colors.surface-dark-soft */
+  --dark-warm-raised: #252320;  /* colors.surface-dark-elevated */
+  --on-dark-warm: #faf9f5;      /* colors.on-dark */
+  --on-dark-warm-soft: #a09d96; /* colors.on-dark-soft */
 }
 
 /* ---------- 2. 语义层：组件只准引用这一层 ---------- */
@@ -100,38 +152,94 @@
   --border-strong: var(--alpha-15);
   --ring: var(--blue-500);
 
-  /* 搜索框：定稿形态是一条底线，所以下列四个令牌对定稿页已经不起作用了 ——
-     newtab.css 里的 .search 直接写底线，不再读它们。它们留着是给已归档的
-     探索页用：全仓库检索确认只有 风格预览.html 的 preview.css 还在引用，
-     设计提案.html / 设计提案二.html 都没用。删掉会让 风格预览.html 塌掉；
-     等它也不用了再一起清。 */
+  /* 下面五个是为了"卡片形态的搜索框 / 宫格块"留的，现在**没有任何页面引用**：
+     定稿页的搜索是一条底线（newtab.css 直接写），Preview.html 也改成直接引用
+     newtab.css 了。留着是因为已归档的看稿页（设计提案二 / 设计细节 / 细节体验）
+     里还有各自的历史定义，等清理归档页时一起删；clay 那套新风格里已经不再引用它们。 */
   --search-bg: var(--surface);
   --search-border: var(--hairline) solid var(--border);
   --search-radius: var(--r-lg);
   --search-shadow: none;
-
-  /* 宫格已经不进定稿页了（真页面只剩搜索框），这两个令牌留着是因为已归档的
-     看稿页还在用：--tile-hover 被 preview/proposals/proposals2 多处引用，
-     --tile-border 被 preview.css 引用。删掉会让那些页面塌掉。 */
   --tile-border: var(--hairline) solid transparent;
-  --tile-hover: var(--alpha-05); /* 宫格块与设置面板的行共用同一个 hover 底色 */
+
+  /* --tile-hover 不一样，它是活的：真页面的设置按钮与设置面板的行都用它 */
+  --tile-hover: var(--alpha-05); /* 设置按钮与设置面板的行共用同一个 hover 底色 */
 
   /* 设置面板（浮起层，官方菜单圆角 12、发丝描边、极轻阴影）
-     为什么单独拆一个 --surface-raised：C 点阵把 --surface 定义成 transparent，
+     为什么单独拆一个 --surface-raised：点阵把 --surface 定义成 transparent，
      面板若直接复用 --surface 就会变成透明底、连点阵一起透出来（真踩过）。
      浮起层永远是不透明的，所以它有自己的令牌。 */
   --surface-raised: var(--surface);
   --panel-bg: var(--surface-raised);
   --panel-border: var(--hairline) solid var(--border);
-  --panel-shadow: var(--shadow-1);
+  /* 卡片的形状与投影：投影的**几何三套共用**，只有颜色换 —— 颜色是可插值的 <color>，
+     所以换肤 / 亮暗时面板的浮起是"淡出"而不是跳变（用户 m03794 第 2 条）。
+     点阵（不画卡片）与暖陶（色块优先）把颜色写成 transparent 就等于不加。 */
+  --panel-r: var(--r-md);
+  --panel-shadow-color: rgb(0 0 0 / 8%);
+  --panel-shadow: 0 1px 2px -1px var(--panel-shadow-color);
+
+  /* 滑块的滑块头、已填充与未填充三段。已填充那一档默认跟着"这套皮肤的可交互色"
+     （基础层就是焦点环那支蓝），点阵把它改成墨色（它那套面板里不出现彩色）；
+     形状由 --slider-knob（头的大小）与 --slider-r（头的圆角）两个令牌描述 ——
+     "药丸还是读数条"是风格的事，而拖动、键盘、量程是框架的事。
+
+     圆角**故意不写 9999px 这种哨兵值**：头高 10px 时肉眼看到的形状是 min(r, 5px)，
+     而 9999 → 2 的插值要到进度 99.92% 才越过 5px，于是"形状"看上去仍是最后一帧
+     翻过去的（用户 m05406）。写成"半个头高"就全程落在可见区间里，插值真的看得见。
+     头的大小本身收了第三轮（14 → 12px 用户 m05538 → 10px 本用户 m00002）：圆头在
+     4px 轨道上是个 3 倍高的珠子，1x 下太抢眼；收到 10px（2.5 倍）才读成"线上的一个点"。
+     点阵那套跟着收到 8px —— "比药丸小一圈"这条关系保住，尺寸与圆角的插值也才都还有得看。 */
+  --slider-knob: 10px;
+  --slider-r: calc(var(--slider-knob) / 2);
+  --slider-fill: var(--ring);
+  /* 滑块"已填充到哪儿"、以及滑块头落在哪儿，都是这一个小数：预览页的脚本在 input 事件里
+     写进行内样式，这里只是它声明的家（给了个默认值，没脚本时滑块也画得出来）。
+     头与填充边界用同一个数算，才不会像用户 m04538 看到的那样错开。 */
+  --slider-frac: 0.5;
+
+  /* A3 逐单元交叉淡入用的三个运行时变量：也由预览页的脚本写进行内样式
+     （错峰要按单元数反算，写不进静态取值里），这里同样只是它们的"家" ——
+     默认 0ms / 0ms 表示"没有脚本写就没有过场"，不再当成回退值用。
+     --i 是单元序号（0 起），--mk-face 是单个单元淡入/淡出的时长，
+     --mk-step 是单元之间的错峰 —— 两个时长都以 --dur-theme 为基准算出来。 */
+  --i: 0;
+  --mk-face: 0ms;
+  --mk-step: 0ms;
+
+  /* 二级下拉菜单与自定义引擎弹窗的浮起程度（同一层，见 preview.css）。
+     用户 m02895 定的方向是"三套都要靠投影与面板分开"，所以这里**有意偏离**
+     规范 Elevation（苹果那套：投影只给产品图，卡片/按钮/文字一律不给）与
+     项目风格纪律第 3 条（阴影上限 0 1px 2px -1px / 8%）：
+     基础层是三套共用的中性黑一档，暖陶覆写成它的暖墨版 --shadow-warm。 */
+  --menu-shadow: 0 8px 24px rgb(0 0 0 / 12%), 0 1px 3px rgb(0 0 0 / 8%);
+
+  /* 显示体（引导语、弹窗标题那种大字号用哪张脸）：纸白就是界面字，
+     点阵换等宽（它的技术气质就靠这张脸），暖陶换衬线。 */
+  --font-display: var(--font-ui);
+
+  /* 引导语那一组的默认值。它属于**框架**（用户 m03467：UI 的排布与控制不是风格的一部分），
+     所以三套共用同一组取值、取的就是当初在暖陶里挑定的那套（41px / 55px / −12% / 0），
+     风格不再各自一组。整组竖直位置是"视口高的百分之多少"（负数上移），线偏移是 px；
+     量程 20–64 / 0–72 / 三档 / ±40% / ±120px 写在 markup 的 input 上。
+     页面脚本把这四个值当默认：滑动条写行内样式前先跟它们比，相等就把行内样式清掉 ——
+     所以设计取值仍然只有 tokens.css 一个来源。 */
+  --mark-size: var(--font-mark);
+  --mark-gap: 55px;
+  --mark-dy: -12;
+  --mark-dx: 0;
+
+  /* 模态遮罩。样式里不准写裸 rgb()，所以遮罩必须落成令牌；
+     暗色下压暗深底需要更重的手，单独在暗色骨架里覆写。 */
+  --scrim: rgb(13 13 13 / 40%);
 }
 
-/* A 纸白：零彩色，白卡片 + 发丝线，唯一彩色是焦点环 */
+/* 纸白：零彩色，白卡片 + 发丝线，唯一彩色是焦点环 */
 [data-style="paper"] {
   /* 全部沿用上面的默认值，这里只是把"它就是默认"这件事写明 */
 }
 
-/* C 点阵：取消卡片与描边，靠点阵托底，hover 才浮现 */
+/* 点阵：取消卡片与描边，靠点阵托底，hover 才浮现 */
 [data-style="grid"] {
   --bg: var(--paper-warm);
   --surface: transparent;
@@ -148,9 +256,26 @@
   --surface-raised: var(--gray-0); /* 面板必须不透明，否则点阵会从面板里透出来 */
   --dot: var(--ink-warm);
   --dot-size: 18px;
+
+  /* 设置卡片在这一套里不是"浮在纸上的白卡"，而是印在坐标纸上的一块淡墨：
+     半透明（点子透过它看得见）、无描边、无投影、见方四角。
+     菜单与弹窗仍走 --surface-raised 的干净白卡 —— 它们是"拿在手上的那一层"，与面板不同层。 */
+  --panel-bg: var(--alpha-05);
+  --panel-border: var(--hairline) solid transparent;
+  --panel-r: var(--r-sm);
+  --panel-shadow-color: transparent;
+  /* 读数条上的"一格刻度"：比纸白的药丸小一圈（8px）、四角只留 2px。
+     尺寸与圆角两条都在换肤过渡里，所以形状是真的在变（用户 m05406）。 */
+  --slider-knob: 8px;
+  --slider-r: 2px;
+  --slider-fill: var(--text);
+
+  /* 点阵的技术气质靠"等宽字的显示体"承：引导语与弹窗标题都换等宽栈。
+     排布类取值（--mark-*）不在这里动 —— 框架只有一套（用户 m03467）。 */
+  --font-display: var(--font-mono);
 }
 
-/* ---------- 3. 自动暗色：A/C 共用骨架 ---------- */
+/* ---------- 3. 自动暗色：纸白 / 点阵 共用骨架 ---------- */
 /* 这一块只放"所有风格共有"的差异。风格专属的差异一律放到它**后面**按风格族各写一条。
    注意：这里**不**写 --search-bg 这类风格专属令牌 —— 当初暗色选择器还带
    `:not([data-style="night"])`（特异性 (0,2,0)）时它压掉过 [data-style] 那一层（真踩过）；
@@ -169,20 +294,92 @@
   --border-strong: rgb(255 255 255 / 20%);
   --ring: var(--blue-400);
 
-  /* A 的搜索框是 var(--surface)，在深色下自动变成 #212121；
-     C 定义的是 transparent（"不画卡片"是它的身份），
-     如果在这里硬写 --search-bg，特异性 (0,2,0) 会把 C 的 transparent 压掉，
+  /* 纸白的搜索框是 var(--surface)，在深色下自动变成 #212121；
+     点阵定义的是 transparent（"不画卡片"是它的身份），
+     如果在这里硬写 --search-bg，特异性 (0,2,0) 会把点阵的 transparent 压掉，
      那种风格在暗色下就长出实心搜索卡了（代码审查发现的）。 */
   --search-border: 0; /* 深色取消描边 */
   --tile-hover: rgb(255 255 255 / 8%);
   --surface-raised: #303030; /* 官方深色 elevated：面板比搜索框再亮一档 */
-  --panel-border: 0;  /* 浮起层也不用描边 */
-  --shadow-1: none;   /* 深色不用阴影分层 */
+  /* 浮起层不用描边也不用阴影：宽度与几何都留着、只把颜色写成透明 ——
+     亮暗之间、换肤之间因此是**淡出**，不会跳一行也不会硬切（用户 m03794 第 2 条）。 */
+  --panel-border: var(--hairline) solid transparent;
+  --panel-shadow-color: transparent;
+  --shadow-1: none;   /* 深色里浮起层靠更亮的灰，不靠阴影 */
+  /* 但菜单 / 弹窗那一层按 m02895 仍要浮起来：深色里换成一档更重的黑，
+     而不是退回发丝线（暖陶深色上一版是归零，用户明确要求放大投影）。 */
+  --menu-shadow: 0 8px 24px rgb(0 0 0 / 48%), 0 1px 3px rgb(0 0 0 / 32%);
+  --scrim: rgb(0 0 0 / 55%); /* 压暗已经发黑的页面，40% 读不出"按下去一层" */
 }
 
-/* C 点阵在暗色下换纸：暖墨纸 + 暖白点（用户 m02694 选定 d2）。
+/* 点阵在暗色下换纸：暖墨纸 + 暖白点（用户 m02694 选定 d2）。
    这条比上面的骨架多一个 [data-style]，特异性 (0,2,0) > (0,1,0)，一定赢。 */
 [data-theme="dark"][data-style="grid"] {
   --bg: var(--paper-ink-dark);
   --dot: var(--ink-warm-dark);
+  --panel-bg: var(--w-06); /* 深底上那块淡墨反过来是"提亮"：暖白点透过它看得见 */
+}
+
+/* ---------- 4.【临时】第三套风格候选：暖陶（data-style="clay"） ----------
+   按用户 m02818 的裁决，它先只加进 Preview.html（那页原本是 纸白 / 点阵 两套舞台），
+   真页面 newtab.js 的 STYLES 里还没有它 —— 所以这一段对 纸白 / 点阵 完全惰性，定案后再搬进 §2 正式区。
+   取值全部指回 DesignReference/DESIGN-claude.md，一值一条目：
+     canvas→--cream-50　surface-soft→--cream-100　surface-card→--cream-200
+     ink→--warm-ink　muted→--warm-muted　muted-soft→--warm-muted-soft
+     hairline→--hairline-warm　primary→--coral-500　3px 外环→--coral-15
+   与规范有四处经用户裁决的偏离，别当成漏做：
+     1. 搜索框仍是"一条底线 / 卡片发丝线"，不是规范 text-input 的 8px 圆角有框输入；
+     2. 圆角沿用本项目的 4/12/24，不采纳规范 rounded.md 的 8px；
+     3. 字体是系统衬线近似（--font-serif），不是 Copernicus / Cormorant Garamond；
+     4. 照规范 Don'ts 不加 hover 样式 → --tile-hover: transparent。 */
+[data-style="clay"] {
+  --bg: var(--cream-50);
+  --surface: var(--cream-50);
+  --surface-2: var(--cream-100);
+  --text: var(--warm-ink);
+  --text-2: var(--warm-muted);
+  --text-3: var(--warm-muted-soft);
+  --border: var(--hairline-warm);
+  --border-strong: var(--hairline-warm); /* 规范只给一档发丝线，不再造第二种描边色 */
+  --ring: var(--coral-500);
+  --surface-raised: var(--cream-200);    /* 浮起层 = feature-card 的 #efe9de */
+  --panel-shadow-color: transparent;     /* Elevation：色块优先、阴影罕见 */
+  --tile-hover: transparent;             /* Don'ts：除系统已编码的按压变暗外不加 hover */
+  /* 自定义引擎弹窗的遮罩。样式里不准写裸 rgb()，所以遮罩也必须落成令牌 ——
+     暖墨 40% 在浅色（#faf9f5）与暖色暗底（#181715）上都读得出"压暗一层"。
+     目前只有 Preview.html 的暖陶舞台引用它。 */
+  --warm-scrim: rgb(20 20 19 / 40%);
+  --scrim: var(--warm-scrim);            /* 遮罩语义令牌指向它 */
+  /* 菜单投影的候选（细节体验台 06 节 V3）。规范里的阴影只有一条：
+     `0 1px 3px rgba(20,20,19,0.08)`，且写明"罕见、只用于 hover 抬升"。
+     这一版按"真要拿阴影当分层手段"的需求放大了一档，属于**有意偏离**，等用户裁决；
+     没被选中的话和 --cream-300 一起删掉即可。 */
+  --shadow-warm: 0 8px 24px rgb(20 20 19 / 14%), 0 1px 3px rgb(20 20 19 / 8%);
+  --menu-shadow: var(--shadow-warm);     /* 用户 m01751 选定：菜单靠投影浮起 */
+  /* 大标题走衬线 —— 规范 display 用的 Copernicus 拿不到，按 Note on Font Substitutes 用系统衬线 */
+  --font-display: var(--font-serif);
+}
+
+/* 暖陶的暗色：暖墨近黑 + 奶油文字（规范 surface-dark / on-dark 那一组）。
+   比骨架多一个 [data-style]，特异性 (0,2,0) > (0,1,0)，一定赢。 */
+[data-theme="dark"][data-style="clay"] {
+  --bg: var(--dark-warm);
+  --surface: var(--dark-warm-raised);
+  --surface-2: var(--dark-warm-soft);
+  --text: var(--on-dark-warm);
+  --text-2: var(--on-dark-warm-soft);
+  /* 规范只给了 on-dark 与 on-dark-soft 两档，暗色下三级信息就并到第二档 */
+  --text-3: var(--on-dark-warm-soft);
+  --border: var(--w-12);
+  --border-strong: var(--w-12);
+  --ring: var(--coral-500);
+  --surface-raised: var(--dark-warm-raised);
+  --panel-border: var(--hairline) solid transparent;
+  --panel-shadow-color: transparent;
+  --menu-shadow: 0 8px 24px rgb(0 0 0 / 45%), 0 1px 3px rgb(0 0 0 / 30%);
+  /* 暖墨投影压在暖暗底上读不出来（细节体验台 06 节记过），
+     但用户 m02895 明确要"三套都靠投影分层"，所以深色换成一档更重的黑。 */
+  --tile-hover: transparent;
+  --search-bg: var(--dark-warm-soft);
+  --search-border: var(--hairline) solid var(--w-12);
 }

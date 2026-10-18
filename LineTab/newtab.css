@@ -25,7 +25,7 @@ body {
   background-color: var(--bg);
 }
 
-/* C 点阵的底纹（--dot / --dot-size 只有 C 与暗色下才有值） */
+/* 点阵的底纹（--dot / --dot-size 只有 C 与暗色下才有值） */
 [data-style="grid"] .page {
   background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: var(--dot-size) var(--dot-size);
