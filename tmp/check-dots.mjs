@@ -1,11 +1,12 @@
-// 点阵「点与底差多少」体检（定案版）：解析 tokens.css 里 C 点阵的两组值，
+// 点阵「点与底差多少」体检（定案版）：解析 tokens.css 里 点阵 的两组值，
 // 算出「点覆盖在底上」之后的色差 ΔRGB 与 WCAG 对比度。
 // 背景：用户最初反馈"点和背景的颜色太相像"（旧的 4.5% 黑点 Δ 只有 10.8），
 // 从 8 版候选里选定 n3（浅色）与 d2（暗色）后，这个脚本用来钉住定案值。
 // 跑法：node tmp/check-dots.mjs
 import { readFileSync } from 'node:fs';
 
-const css = readFileSync(new URL('../tokens.css', import.meta.url), 'utf8');
+// 令牌源在 LineTab/tokens.css（早先脚本还在仓库根目录时写在 tmp/ 的兄弟位置）
+const css = readFileSync(new URL('../LineTab/tokens.css', import.meta.url), 'utf8');
 
 // 先收全 --x: value，再做一层 var() 解析（够用：纸色/点色都只引用一次基础层令牌）
 const declared = new Map([...css.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map(([, k, v]) => [k, v.trim()]));
