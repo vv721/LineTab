@@ -199,3 +199,147 @@ test('手动改的左侧元素与焦点反馈，重开之后仍然生效', async
   await expect(page.locator('#focus-value')).toHaveText('不变');
   await expect(page.locator('.search .prompt')).toBeVisible();
 });
+
+/* ============================================================
+   过场：D1 逐色渐变（m00768 定的框架行为，原来看稿页有、交付页没有）
+   这几条盯的是"交付页真的拿到了看稿页那套过场"，不是像素：
+   像素由上面的 newtab-*.png 钉住，这里钉的是"中途有没有插值"。
+   ============================================================ */
+
+/** 半程采样：点一下某个设置之后，每 40ms 记一次 --bg / --panel-r，共记 14 次（≈560ms，比 420ms 长） */
+async function sampleTransition(page) {
+  return page.evaluate(() => new Promise((resolve) => {
+    const cs = getComputedStyle(document.documentElement);
+    const seen = [];
+    const tick = () => {
+      seen.push({
+        t: performance.now(),
+        bg: cs.getPropertyValue('--bg').trim(),
+        r: cs.getPropertyValue('--panel-r').trim(),
+        text: cs.getPropertyValue('--text').trim(),
+      });
+      if (seen.length < 14) setTimeout(tick, 40);
+      else resolve(seen);
+    };
+    tick();
+  }));
+}
+
+test('换肤是逐色渐变：底色与圆角都在中途插值，而不是一帧跳过去', async ({ page }) => {
+  await page.goto(`${PAGE}#paper+panel`);
+  await expect(page.locator('html')).not.toHaveAttribute('data-booting', '');
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'paper');
+
+  // 过渡表真的挂在这个元素上（18 个自定义属性，少一个就有某处仍是硬切）
+  const table = await page.locator('html').evaluate((n) => getComputedStyle(n).transitionProperty);
+  for (const prop of ['--bg', '--text', '--panel-bg', '--border-strong', '--panel-r']) {
+    expect(table).toContain(prop);
+  }
+
+  const before = await page.evaluate(() => {
+    const cs = getComputedStyle(document.documentElement);
+    return { bg: cs.getPropertyValue('--bg').trim(), r: cs.getPropertyValue('--panel-r').trim() };
+  });
+
+  // 走真实的设置面板：纸白 → 点阵（不是直接改 dataset，那样测不到真实路径）
+  await page.locator('#style').click();
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
+  const seen = await sampleTransition(page);
+
+  const bgs = [...new Set(seen.map((s) => s.bg))];
+  const rs = [...new Set(seen.map((s) => s.r))];
+  // 中途至少出现过一个"既不是起点也不是终点"的底色与圆角
+  expect(bgs.length).toBeGreaterThan(2);
+  expect(rs.length).toBeGreaterThan(2);
+
+  // 圆角从 12px 慢慢收到 4px（点阵那套是见方四角），中途不许是两端的跳变
+  const mid = seen.filter((s) => parseFloat(s.r) > 4.05 && parseFloat(s.r) < 11.95);
+  expect(mid.length).toBeGreaterThan(2);
+
+  // 走完之后落到点阵的终值
+  const after = await page.evaluate(() => {
+    const cs = getComputedStyle(document.documentElement);
+    return { bg: cs.getPropertyValue('--bg').trim(), r: cs.getPropertyValue('--panel-r').trim() };
+  });
+  expect(after.r).toBe('4px');
+  expect(after.bg).not.toBe(before.bg);
+
+  // 最后一条：真的画出来了 —— 面板的 computed 圆角跟令牌一致（--panel-r 没被别的规则盖掉）
+  const panelRadius = await page.locator('#panel').evaluate((n) => getComputedStyle(n).borderTopLeftRadius);
+  expect(panelRadius).toBe('4px');
+});
+
+test('亮暗切换走同一条过场：字与底一起变，不是先黑底后黑字', async ({ page }) => {
+  await page.goto(`${PAGE}#paper+panel`);
+  await expect(page.locator('html')).not.toHaveAttribute('data-booting', '');
+
+  // 跟随系统 → 常暗（真实点击）
+  await page.locator('#dark').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  const seen = await sampleTransition(page);
+
+  // 亮底 → 暗底：中途必须出现"既不是浅色也不是深色"的中间色
+  const bgs = [...new Set(seen.map((s) => s.bg))];
+  expect(bgs.length).toBeGreaterThan(2);
+  // 文字色同理（同一时长、同一条曲线：不允许"底已经黑了、字还黑着"）
+  const texts = [...new Set(seen.map((s) => s.text))];
+  expect(texts.length).toBeGreaterThan(2);
+});
+
+test('首屏不闪：按 hash 播种的那一次不过场，之后才恢复 420ms', async ({ page }) => {
+  await page.goto(`${PAGE}#grid+dark+panel`);
+
+  // 打开瞬间不该有自定义属性的过渡在跑
+  const running = await page.evaluate(() => document.getAnimations()
+    .filter((a) => a.transitionProperty && a.transitionProperty.startsWith('--')).length);
+  expect(running).toBe(0);
+
+  // 两帧之后脚本摘掉 data-booting，时长回到令牌里的那一个来源
+  await expect(page.locator('html')).not.toHaveAttribute('data-booting', '');
+  const dur = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--dur-theme').trim());
+  expect(dur).toBe('420ms');
+});
+
+test('系统开了「减少动态效果」时，过场退化成直接切换', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${PAGE}#paper+panel`);
+  await expect(page.locator('html')).not.toHaveAttribute('data-booting', '');
+
+  const dur = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--dur-theme').trim());
+  expect(dur).toBe('0s');
+
+  await page.locator('#style').click();
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
+  // 归零之后没有过渡在跑，60ms 读到就是终值（--bg 与 --panel-r 同时落位）
+  const snap = await page.evaluate(() => new Promise((resolve) => {
+    setTimeout(() => {
+      const cs = getComputedStyle(document.documentElement);
+      resolve({
+        r: cs.getPropertyValue('--panel-r').trim(),
+        // 只数自定义属性那几条：行的 hover 背景也有 150ms 过渡，那是另一件事
+        anims: document.getAnimations()
+          .filter((a) => a.transitionProperty && a.transitionProperty.startsWith('--')).length,
+      });
+    }, 60);
+  }));
+  expect(snap.r).toBe('4px');
+  expect(snap.anims).toBe(0);
+});
+
+
+test('畸形 hash 也不会把页面卡在「过场归零」：data-booting 由 finally 摘', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (err) => errors.push(err.message));
+
+  // #% 是非法转义：decodeURIComponent 会抛 URIError（老一版会打断 init()）
+  await page.goto(`${PAGE}#%`);
+
+  // 这一条就是回归点：异常被吞掉，启动流程照样走到 finally
+  await expect(page.locator('html')).not.toHaveAttribute('data-booting', '');
+  const dur = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--dur-theme').trim());
+  expect(dur).toBe('420ms');
+  // 页面还是能用的：默认值落位、输入框拿到焦点
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'paper');
+  await expect(page.locator('#q')).toBeFocused();
+  expect(errors).toEqual([]);
+});

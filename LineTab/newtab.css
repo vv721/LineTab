@@ -139,7 +139,9 @@ body {
   padding: 6px;
   background: var(--panel-bg);
   border: var(--panel-border);
-  border-radius: var(--r-md);
+  /* 用 --panel-r 而不是 --r-md：形状是风格的事（点阵那套是 4px 见方），
+     而且它注册成了可插值的 <length>，换肤时圆角才跟着慢慢变 */
+  border-radius: var(--panel-r);
   box-shadow: var(--panel-shadow);
 }
 
@@ -176,3 +178,71 @@ body {
 
 .rv:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .chev { width: 14px; height: 14px; }
+
+/* ---------- 亮暗切换与换肤的过场：D1 逐色渐变（框架级，与看稿页同一套） ----------
+   这一节是从 preview.css 搬过来的（那边 :502 起是权威注释，改动请两边一起改）：
+   把语义色注册成可插值的 <color>，再让它们用同一个时长、同一条曲线一起走。
+   亮底黑字换暗底白字时，墨迹与底色必然在某一刻同灰度 —— 那一刻字看不见，这是插值的
+   几何必然。D1 的处理是让它一闪而过：--ease-mid 中心对称、斜率最大落在半程，
+   两色相遇的那一两帧因此被压到最短。材质与墨迹必须同一条曲线（早前让材质先跑、
+   墨迹晚 30% 跟上，实测有 1/3 时长的"底已经黑了、字还黑着" —— 别改回去）。
+   时长只有一个来源：--dur-theme。
+
+   注意：注册与 transition 都必须写在**变化之后生效的那条规则**上（html 就是
+   [data-style] 所在的那个元素），写进被切走的那条不管用。@property 是全局注册，
+   本文件在 tokens.css 之后加载，一条注册对整页生效。 */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface-raised { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --tile-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --border { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --border-strong { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text-2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text-3 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --ring { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --panel-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --panel-shadow-color { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --scrim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --slider-fill { syntax: '<color>'; inherits: true; initial-value: transparent; }
+/* 形状也要一起化，否则"任意风格互切"在几何上仍是硬切：未注册的 <length> 是离散值，
+   会在同一帧跳完（实测切回去后第 38ms 圆角就已是终值，而 --panel-bg 才走到一半）。
+   值必须与 tokens.css 的初始档一致，否则首帧会先按这里的值画一下。 */
+@property --panel-r { syntax: '<length>'; inherits: true; initial-value: 12px; }
+@property --slider-knob { syntax: '<length>'; inherits: true; initial-value: 10px; }
+@property --slider-r { syntax: '<length>'; inherits: true; initial-value: 5px; }
+
+/* 故意不注册 --dot：点阵的圆点在 background-image 里，图像不能插值 ——
+   它随皮肤一帧换掉，但页面底色本身在过渡，所以那一下就落在一条灰色的底上。 */
+[data-style] {
+  transition:
+    --bg var(--dur-theme) var(--ease-mid),
+    --surface var(--dur-theme) var(--ease-mid),
+    --surface-2 var(--dur-theme) var(--ease-mid),
+    --surface-raised var(--dur-theme) var(--ease-mid),
+    --panel-bg var(--dur-theme) var(--ease-mid),
+    --panel-shadow-color var(--dur-theme) var(--ease-mid),
+    --scrim var(--dur-theme) var(--ease-mid),
+    --slider-fill var(--dur-theme) var(--ease-mid),
+    --tile-hover var(--dur-theme) var(--ease-mid),
+    --border var(--dur-theme) var(--ease-mid),
+    --border-strong var(--dur-theme) var(--ease-mid),
+    --text var(--dur-theme) var(--ease-mid),
+    --text-2 var(--dur-theme) var(--ease-mid),
+    --text-3 var(--dur-theme) var(--ease-mid),
+    --ring var(--dur-theme) var(--ease-mid),
+    --panel-r var(--dur-theme) var(--ease-mid),
+    --slider-knob var(--dur-theme) var(--ease-mid),
+    --slider-r var(--dur-theme) var(--ease-mid);
+}
+
+/* 首屏瞬时落位：newtab.js 在 init() 的最后一次 renderAll() 之后两帧摘掉这个属性。
+   只看 CSS 也得说得通：没有它的话，页面上是纸白、存档是点阵时会看到一次多余的淡入。 */
+[data-booting] { --dur-theme: 0s; }
+
+/* 尊重"减少动态效果"：只把时长归零，过场退化成直接切换 */
+@media (prefers-reduced-motion: reduce) {
+  [data-style] { --dur-theme: 0s; }
+}
+

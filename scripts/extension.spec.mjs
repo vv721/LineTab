@@ -1,5 +1,5 @@
 // ============================================================
-// 扩展本身能不能用（T1–T6）：真的把 newtab-extension 装进浏览器再验。
+// 扩展本身能不能用（T1–T9）：真的把 newtab-extension 装进浏览器再验。
 //
 // 为什么不在这儿做像素比对：这个 project 用的是 Playwright 自带的那份 Chromium，
 // 与你本机 Chrome 的渲染不保证逐像素一致 —— 视觉的事交给 chrome project（channel: 'chrome'）。
@@ -317,3 +317,52 @@ test('T8 改完设置立刻离开页面：pagehide 会把没发出去的写入�
     await context.close();
   }
 });
+
+/* 看稿页那套过场（@property 注册 + [data-style] 过渡表 + [data-booting]）是不是真的
+   跟着进了发布形态：这里量的是"中途有没有插值"，不是像素 —— 像素由 chrome project 钉。 */
+test('T9 发布形态也挂着逐色过场：换肤中途真的在插值，首屏那一次不过场', async () => {
+  const context = await launch(freshProfile('t9'));
+  try {
+    const { page } = await openNewTab(context);
+
+    // 首屏：脚本两帧后摘掉 data-booting，时长回到令牌里的唯一来源
+    await expect(page.locator('html')).not.toHaveAttribute('data-booting', '');
+    const dur = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--dur-theme').trim());
+    expect(dur).toBe('420ms');
+
+    // 过渡表真的挂在这一页上（--bg 与形状 --panel-r 都在其中）
+    const table = await page.evaluate(() => getComputedStyle(document.documentElement).transitionProperty);
+    for (const prop of ['--bg', '--text', '--panel-bg', '--panel-r']) expect(table).toContain(prop);
+
+    // 走真实面板：设置 → 风格：纸白 → 点阵
+    await page.locator('#settings').click();
+    await page.locator('#style').click();
+    await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
+
+    const seen = await page.evaluate(() => new Promise((resolve) => {
+      const cs = getComputedStyle(document.documentElement);
+      const out = [];
+      const tick = () => {
+        out.push({
+          bg: cs.getPropertyValue('--bg').trim(),
+          r: cs.getPropertyValue('--panel-r').trim(),
+        });
+        if (out.length < 12) setTimeout(tick, 40);
+        else resolve(out);
+      };
+      tick();
+    }));
+
+    expect(new Set(seen.map((s) => s.bg)).size).toBeGreaterThan(2);
+    expect(new Set(seen.map((s) => s.r)).size).toBeGreaterThan(2);
+    expect(seen.filter((s) => parseFloat(s.r) > 4.05 && parseFloat(s.r) < 11.95).length).toBeGreaterThan(2);
+
+    // 落位之后面板圆角跟点阵令牌一致（12px → 4px）
+    await page.waitForTimeout(500);
+    const radius = await page.locator('#panel').evaluate((n) => getComputedStyle(n).borderTopLeftRadius);
+    expect(radius).toBe('4px');
+  } finally {
+    await context.close();
+  }
+});
+

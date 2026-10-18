@@ -363,7 +363,15 @@ function bindEvents() {
    newtab.html#grid+auto         —— 点阵 + 跟随系统（看暗色下点阵还在不在）
    注意：这里只写进 overrides（本次显示），不落盘。 */
 function applyHashOverrides() {
-  const parts = decodeURIComponent(window.location.hash.replace(/^#/, '')).split('+');
+  /* hash 是手打的，可能是畸形转义（#% 之类），decodeURIComponent 会抛 URIError。
+     抛出去就会打断 init()，见文件末尾 init().finally() 里那段注释。 */
+  let raw = '';
+  try {
+    raw = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+  } catch (err) {
+    raw = ''; // 当作没带 hash
+  }
+  const parts = raw.split('+');
 
   /* 左侧元素与焦点反馈也按 hash 借，但**只有显式写了才借**：
      若像风格那样无条件写一遍默认值，一次不带 hash 的打开就会把 overrides
@@ -406,4 +414,17 @@ async function init() {
   });
 }
 
-init();
+/* 首屏那两帧已经画完了（默认值 → 存档值 / hash 值），这时候才允许过场介入：
+   摘掉 data-booting，--dur-theme 恢复成 tokens.css 里的 420ms。
+   用两帧而不是一帧：第一帧是「提交这次渲染」，第二帧才是「它真的被画出来了」。
+
+   为什么放在 finally 而不是 init() 末尾：init() 里以后再加任何 await / 解码，
+   都可能抛在这之前。那样 data-booting 会永久留在 <html> 上，--dur-theme 恒为 0s，
+   页面照常能用、只是换肤与亮暗永远退回硬切 —— 一个无声的永久降级，比崩掉还难查。 */
+init()
+  .catch((err) => console.error('[LineTab] 启动失败，页面按默认值继续', err))
+  .finally(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => document.documentElement.removeAttribute('data-booting'));
+    });
+  });
