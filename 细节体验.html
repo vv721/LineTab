@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="proposals-base.css">
   <link rel="stylesheet" href="details.css">
   <link rel="stylesheet" href="details-lab.css">
+  <link rel="stylesheet" href="skin-switch-lab.css">
 </head>
 <body class="lab-page">
 
@@ -191,6 +192,292 @@
     </div>
   </section>
 
+  <!-- ============================================================
+       05 亮暗切换的过场
+       样张内容只写一份（下面的 <template>），由脚本按每个 demo 需要的份数放进去。
+       ============================================================ -->
+  <template id="demo-face">
+    <div class="demo-face">
+      <div class="demo-field">
+        <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor"></circle>
+          <path d="M10.5 10.5 14 14" stroke="currentColor" stroke-linecap="round"></path>
+        </svg>
+        <input class="q" type="text" value="chrome 新标签页" aria-label="样张输入框">
+        <span class="d-tag">BING</span>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-row">
+          <span class="demo-rl">默认搜索引擎</span>
+          <span class="demo-rv">Bing</span>
+        </div>
+        <div class="demo-row" data-hover>
+          <span class="demo-rl">暗色</span>
+          <span class="demo-rv">跟随系统</span>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <section class="lab-group">
+    <h2 class="lab-label">05 · 亮暗切换的过场</h2>
+    <p class="lab-sub">下面四种都走在"整体一起换"这条线上：不从某一点扩散，也不从一头扫到另一头。绕不开的一件事是：亮底黑字换成暗底白字，墨迹的灰度与底色的灰度必然在某一刻相等，那一刻文字是看不见的 —— 三版的差别就在怎么处理这一刻：D1 让它一闪而过、D2 不给它出现的机会、D3 用一次亮度呼吸把它盖住。最上面那行是现在的硬切，留作对照。时长与曲线都走令牌 <code>--dur-theme</code> / <code>--ease-mid</code>。</p>
+
+    <div class="theme-bar">
+      <button class="lab-btn" type="button" data-sequence>三版轮播一遍</button>
+      <button class="lab-btn" type="button" data-reset>全部复位为亮色</button>
+      <label class="lab-check"><input type="checkbox" data-slow> 慢放 ×3</label>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">对照 · 硬切</span>
+      <div class="theme-cell">
+        <div class="demo" data-demo="d0" data-style="paper"></div>
+        <div class="theme-ctl">
+          <button class="lab-btn" type="button" data-flip="d0">切一次</button>
+          <span class="lab-state">现在：<b data-state="d0">亮</b></span>
+          <span class="lab-note">真页面现在的行为：一帧换完，没有任何中间态。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">D1 逐色渐变</span>
+      <div class="theme-cell">
+        <div class="demo" data-demo="d1" data-style="paper"></div>
+        <div class="theme-ctl">
+          <button class="lab-btn" type="button" data-flip="d1">切一次</button>
+          <span class="lab-state">现在：<b data-state="d1">亮</b></span>
+          <span class="lab-note">材质与墨迹一条曲线一起走；撞上同一个灰度只持续一两帧，看着就是整体化开。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">D2 中点翻转</span>
+      <div class="theme-cell">
+        <div class="demo" data-demo="d2" data-style="paper"></div>
+        <div class="theme-ctl">
+          <button class="lab-btn" type="button" data-flip="d2">切一次</button>
+          <span class="lab-state">现在：<b data-state="d2">亮</b></span>
+          <span class="lab-note">材质平滑走完，墨迹在半程那一帧直换 —— 那一刻底色正好在两端中点，黑白两套字都还看得清。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">D3 曝光过场</span>
+      <div class="theme-cell">
+        <div class="demo" data-demo="d3" data-style="paper"></div>
+        <div class="theme-ctl">
+          <button class="lab-btn" type="button" data-flip="d3">切一次</button>
+          <span class="lab-state">现在：<b data-state="d3">亮</b></span>
+          <span class="lab-note">整体直换，过渡落在亮度上：先压暗（往亮走则先提亮），把换色藏在最不显眼的一瞬。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       06 面板与二级菜单的分层（暖陶）
+       六张样张的 DOM 完全相同（下面的 <template> 只写一份，脚本按份数灌进去），
+       差别全在 details-lab.css 里那几个 --lay-* 上 —— 这样比的是"分层手段"，
+       不是"顺手动了一下版式"。
+       ============================================================ -->
+  <template id="lay-sample">
+    <div class="lay-panel">
+      <div class="lay-row">
+        <span class="lay-rl">默认搜索引擎</span>
+        <span class="lay-rv">Bing<svg class="lay-chev" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 6.5 8 10 11.5 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        <div class="lay-menu">
+          <div class="lay-opt is-on">Bing<svg class="lay-check" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div class="lay-opt is-on">Google<svg class="lay-check" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div class="lay-opt lay-action">自定义…</div>
+        </div>
+      </div>
+      <div class="lay-row"><span class="lay-rl">搜索框左侧</span><span class="lay-rv">放大镜</span></div>
+      <div class="lay-row"><span class="lay-rl">焦点反馈</span><span class="lay-rv">深灰细线</span></div>
+      <div class="lay-row"><span class="lay-rl">暗色</span><span class="lay-rv">跟随系统</span></div>
+    </div>
+  </template>
+
+  <section class="lab-group">
+    <h2 class="lab-label">06 · 面板与二级菜单怎么分层（暖陶）</h2>
+    <p class="lab-sub">问题：设置面板与它展开的二级菜单取的是同一个令牌 <code>--surface-raised</code>（浅色 <code>#efe9de</code>、深色 <code>#252320</code>），两边同色，只剩一条 1px 发丝线分界。规范里能查到两条依据：Elevation 写明"深度主要来自色块、阴影罕见"，而 Do/Don't 里直接有一条「Don't repeat the same surface mode in two consecutive bands」—— 面板与菜单叠在一起还用同一种表面，正好踩在禁则上。下面六张是同一段 DOM，只有分层手段不同：V0 是现状，V1–V3 是规范内的三种色/影做法，V4 换一种表面模式，V5 不动颜色、改结构。勾上暗色可以看深色主题（那边两者同为 <code>#252320</code>，同样糊）。</p>
+
+    <div class="theme-bar">
+      <label class="lab-check"><input type="checkbox" data-lay-dark> 暗色</label>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">V0 现状</span>
+      <div class="theme-cell lay-cell">
+        <div class="lay-demo" data-style="clay" data-lay="v0"></div>
+        <div class="theme-ctl">
+          <span class="lab-state">底板与菜单同色 <b>#efe9de</b></span>
+          <span class="lab-note">只靠一条发丝线分界，其余全靠"猜"——这就是要修的那一版。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">V1 再深一档</span>
+      <div class="theme-cell lay-cell">
+        <div class="lay-demo" data-style="clay" data-lay="v1"></div>
+        <div class="theme-ctl">
+          <span class="lab-state">菜单 <b>--cream-300</b></span>
+          <span class="lab-note">菜单换成规范里"被强调/被选中"的 surface-cream-strong —— 踩着「色块优先」，一个值就能解决，最贴规范。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">V2 退到画布档</span>
+      <div class="theme-cell lay-cell">
+        <div class="lay-demo" data-style="clay" data-lay="v2"></div>
+        <div class="theme-ctl">
+          <span class="lab-state">菜单 <b>--cream-50</b></span>
+          <span class="lab-note">反过来往下退一档：菜单读起来像"面板上开的一扇窗"，谁更像底一眼分得清（与 V1 方向相反）。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">V3 投影</span>
+      <div class="theme-cell lay-cell">
+        <div class="lay-demo" data-style="clay" data-lay="v3"></div>
+        <div class="theme-ctl">
+          <span class="lab-state">色不动，只加<b>暖墨投影</b></span>
+          <span class="lab-note">规范里唯一写到的阴影手段（原值只有 1px/8% 且限定 hover）；这版放大了，属有意偏离。短板：深色主题上几乎看不出层次。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">V4 换表面模式</span>
+      <div class="theme-cell lay-cell">
+        <div class="lay-demo" data-style="clay" data-lay="v4"></div>
+        <div class="theme-ctl">
+          <span class="lab-state">菜单 <b>#181715</b> + on-dark 字</span>
+          <span class="lab-note">整块换成暗色 chrome：规范最靠得住的分层本来就是"奶油↔暗面"这两档表面。最重的一版。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">V5 就地展开</span>
+      <div class="theme-cell lay-cell">
+        <div class="lay-demo" data-style="clay" data-lay="v5"></div>
+        <div class="theme-ctl">
+          <span class="lab-state">不加色差，改<b>结构</b></span>
+          <span class="lab-note">菜单不进浮层，变成面板里一段内嵌清单、把下面的行推开 —— 分层由结构负责，颜色根本不用动。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       07 换皮肤：焦点 / 背景 / 配色三拍
+       四张样张的 DOM 完全相同（下面 <template> 只写一份），差别只在编排：
+       谁先动、哪条属性插值。样张按 .76 缩小，但底、引导语、搜索线、
+       菜单卡、设置卡取的都是真令牌 —— 对着看的不是"像不像"，是"哪一帧跳"。
+       编排由 skin-switch-lab.css 里注册的令牌 + 页面脚本的 WAAPI 驱动，
+       机制与仓库里的 D1 同源；好处是可以定格、拖动、慢放。
+       ============================================================ -->
+  <template id="skin-face">
+    <div class="sk-stage">
+      <div class="sk-field">
+        <div class="sk-q"><span class="sk-qa" aria-hidden="true"></span><span class="sk-qb"></span></div>
+        <div class="sk-search"><span>⌕</span><span class="sk-hint">BING</span></div>
+      </div>
+      <div class="sk-menu"><b>菜单卡</b>只在这里看投影那一拍</div>
+      <div class="sk-panel">
+        <div class="sk-row"><span class="sk-rl">默认搜索引擎</span><span class="sk-rv">Bing</span></div>
+        <div class="sk-row"><span class="sk-rl">风格</span><span class="sk-rv sk-skin">纸白</span></div>
+        <div class="sk-srow"><span class="sk-rl">引导语字号</span><span class="sk-sl" style="--slider-frac:.477"><i class="sk-track"></i><i class="sk-fill"></i><i class="sk-knob"></i></span></div>
+      </div>
+    </div>
+  </template>
+
+  <section class="lab-group">
+    <h2 class="lab-label">07 · 换皮肤：焦点 / 背景 / 配色三拍</h2>
+    <p class="lab-sub">换肤时真正会"跳"的只有三处：<b>引导语的字脸</b>（三套之间它只差字脸 —— 字号、字重、字距、位置全是框架令牌，可它偏偏是视觉中心）、<b>点阵纹样</b>（底色三套差不到 2/255，背景的观感变化几乎全来自点子）、<b>投影</b>（<code>@property</code> 没有 <code>&lt;shadow&gt;</code> 语法，注册不了）。颜色本身已经在一条 420ms 的中心对称曲线上。下面四张是同一段皮肤切换的四种编排，共用一条时间轴，可以定格在同一时刻比"谁先跳"：A0 是现在的做法，A1 只把三处硬切补上，A2 再加"先字后景"，A3 把字脸换成逐字错峰。每张下面那行"单帧完成"是脚本逐帧采样算出来的：某条属性只在相邻两帧间变过一次，就是被一帧硬切掉了。</p>
+
+    <div class="theme-bar">
+      <button class="lab-btn" type="button" data-sk-seq>四版同播：纸白 → 点阵</button>
+      <button class="lab-btn" type="button" data-sk-play>▶ 播放 / 继续</button>
+      <button class="lab-btn" type="button" data-sk-reset>全部复位为纸白</button>
+      <label class="lab-check"><input type="checkbox" data-sk-slow> 慢放 ×3</label>
+      <input class="sk-bar" type="range" min="0" max="590" step="1" value="0" data-sk-bar aria-label="换肤时间轴（四张一起走）">
+      <span class="lab-state">时间轴 <output data-sk-clock>0ms</output></span>
+      <span class="lab-note">拖动滑杆 = 四张一起定格；每张的按钮单独触发它自己那版，方便并排看同一时刻。</span>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">A0 现在的做法</span>
+      <div class="theme-cell">
+        <div class="sk-demo" data-sk="a0"></div>
+        <div class="theme-ctl">
+          <div class="sk-ctl">
+            <button class="lab-btn" type="button" data-sk-go="a0" data-sk-to="grid">切到点阵</button>
+            <button class="lab-btn" type="button" data-sk-go="a0" data-sk-to="clay">切到暖陶</button>
+            <button class="lab-btn" type="button" data-sk-dark="a0">切亮暗</button>
+          </div>
+          <span class="lab-state">单帧完成：<b class="sk-cuts" data-sk-cuts="a0">—</b></span>
+          <span class="lab-note">注册过的 18 条令牌一起走 420ms，字脸、点阵、投影当场换掉 —— 也就是仓库现在的行为。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">A1 补上三处硬切</span>
+      <div class="theme-cell">
+        <div class="sk-demo" data-sk="a1"></div>
+        <div class="theme-ctl">
+          <div class="sk-ctl">
+            <button class="lab-btn" type="button" data-sk-go="a1" data-sk-to="grid">切到点阵</button>
+            <button class="lab-btn" type="button" data-sk-go="a1" data-sk-to="clay">切到暖陶</button>
+            <button class="lab-btn" type="button" data-sk-dark="a1">切亮暗</button>
+          </div>
+          <span class="lab-state">单帧完成：<b class="sk-cuts" data-sk-cuts="a1">—</b></span>
+          <span class="lab-note">字脸交叉淡入（两份字完全对位，旧的退场）、<code>--dot</code> 注册成颜色让点子淡入淡出、投影交给消费方过渡。世界仍是同步 420ms。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">A2 先字后景</span>
+      <div class="theme-cell">
+        <div class="sk-demo" data-sk="a2"></div>
+        <div class="theme-ctl">
+          <div class="sk-ctl">
+            <button class="lab-btn" type="button" data-sk-go="a2" data-sk-to="grid">切到点阵</button>
+            <button class="lab-btn" type="button" data-sk-go="a2" data-sk-to="clay">切到暖陶</button>
+            <button class="lab-btn" type="button" data-sk-dark="a2">切亮暗</button>
+          </div>
+          <span class="lab-state">单帧完成：<b class="sk-cuts" data-sk-cuts="a2">—</b></span>
+          <span class="lab-note">字脸 0–250ms 先落定（它跟底色的对比还没到"看不见"的窗口），世界 170–590ms 跟上 —— 把两次看不清并成一次。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-row theme-row">
+      <span class="lab-tag">A3 逐字错峰</span>
+      <div class="theme-cell">
+        <div class="sk-demo" data-sk="a3"></div>
+        <div class="theme-ctl">
+          <div class="sk-ctl">
+            <button class="lab-btn" type="button" data-sk-go="a3" data-sk-to="grid">切到点阵</button>
+            <button class="lab-btn" type="button" data-sk-go="a3" data-sk-to="clay">切到暖陶</button>
+            <button class="lab-btn" type="button" data-sk-dark="a3">切亮暗</button>
+          </div>
+          <span class="lab-state">单帧完成：<b class="sk-cuts" data-sk-cuts="a3">—</b></span>
+          <span class="lab-note">新脸从字首逐个浮起、旧脸在同一个字格里退掉（每字错峰 26ms），置换被摊到十几帧。代价：拆字后整份的字距与连笔和原来略有差别，且多一层 DOM。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <p class="lab-foot">这一页只是体验台，不是定稿：你体验完指哪几个，我把选中的那组落进 tokens.css / newtab.css，并清掉没选中的样张。</p>
 
 </main>
@@ -228,6 +515,393 @@
       input.focus();
     }
   }
+
+  // ============================================================
+  // 05 亮暗切换的过场
+  // 样张内容只有一份（<template>），按每个 demo 需要的份数放进去：
+  // D2 的机理就是"两张完整的渲染叠化"，所以只有它要两份。
+  // ============================================================
+  const faceTemplate = document.querySelector('#demo-face');
+  const themeDemos = [...document.querySelectorAll('.demo')];
+
+  // 样张内容只有一份：每一行放一张完整的脸，亮暗由容器上的 data-theme 决定
+  for (const el of themeDemos) {
+    el.append(faceTemplate.content.cloneNode(true));
+  }
+
+  // 时长只有一个来源：读 CSS 里的 --dur-theme。
+  // 慢放与"系统里关了动效"都只改这一个值，所以 CSS 与 JS 不会各走各的节拍。
+  const durOf = (el) => {
+    const raw = getComputedStyle(el).getPropertyValue('--dur-theme').trim();
+    const value = parseFloat(raw) || 0;
+    return raw.endsWith('ms') ? value : value * 1000;
+  };
+
+  const setDark = (el, dark) => {
+    el.toggleAttribute('data-dark', dark);
+    if (dark) el.setAttribute('data-theme', 'dark');
+    else el.removeAttribute('data-theme');
+    const out = document.querySelector(`[data-state="${el.dataset.demo}"]`);
+    if (out) out.textContent = dark ? '暗' : '亮';
+  };
+
+  const flip = (el) => {
+    const dark = !el.hasAttribute('data-dark');
+
+    // D0 硬切与 D1 逐色插值：状态一改就完了（D1 的中间态由 CSS 的 transition 负责）
+    if (el.dataset.demo !== 'd3') {
+      setDark(el, dark);
+      return;
+    }
+
+    // D3 曝光：先压暗（往暗走）或先提亮（往亮走），在亮度极值那一刻换掉颜色
+    el.classList.remove('is-dip', 'is-lift');
+    void el.offsetWidth; // 清掉上一次的残留，动画才能立刻从头再来
+    el.classList.add(dark ? 'is-dip' : 'is-lift');
+    el.addEventListener('animationend', () => el.classList.remove('is-dip', 'is-lift'), { once: true });
+    window.setTimeout(() => setDark(el, dark), durOf(el) * 0.45);
+  };
+
+  document.querySelectorAll('[data-flip]').forEach((button) => {
+    button.addEventListener('click', () => {
+      flip(document.querySelector(`[data-demo="${button.dataset.flip}"]`));
+    });
+  });
+
+  const slowBox = document.querySelector('[data-slow]');
+  const BASE_DUR = durOf(themeDemos[0]); // 基准也从 CSS 读，JS 里不再写第二个数
+
+  slowBox.addEventListener('change', () => {
+    for (const el of themeDemos) {
+      if (slowBox.checked) el.style.setProperty('--dur-theme', `${BASE_DUR * 3}ms`);
+      else el.style.removeProperty('--dur-theme');
+    }
+  });
+
+  document.querySelector('[data-reset]').addEventListener('click', () => {
+    for (const el of themeDemos) {
+      el.classList.remove('is-dip', 'is-lift');
+      setDark(el, false);
+    }
+  });
+
+  document.querySelector('[data-sequence]').addEventListener('click', () => {
+    // 一起动反而看不清谁在做什么，隔开一点更好比
+    const gap = BASE_DUR * 2.4;
+    ['d1', 'd2', 'd3'].forEach((key, index) => {
+      window.setTimeout(() => flip(document.querySelector(`[data-demo="${key}"]`)), index * gap);
+    });
+  });
+
+  // ============================================================
+  // 06 面板与二级菜单的分层
+  // 样张 DOM 只有一份（<template>），六张样式各自灌一份；
+  // "暗色"只改容器上的 data-theme，六张一起走（暖陶的暗色令牌是
+  // [data-theme="dark"][data-style="clay"]，两件属性都挂在这一层元素上）。
+  // ============================================================
+  const layTemplate = document.querySelector('#lay-sample');
+  const layDemos = [...document.querySelectorAll('.lay-demo')];
+
+  for (const el of layDemos) {
+    el.append(layTemplate.content.cloneNode(true));
+  }
+
+  document.querySelector('[data-lay-dark]').addEventListener('change', (event) => {
+    for (const el of layDemos) {
+      if (event.target.checked) el.setAttribute('data-theme', 'dark');
+      else el.removeAttribute('data-theme');
+    }
+  });
+  /* ============================================================
+     07 · 换皮肤三拍的编排。三件事：
+     ① 探针：三套皮肤 × 亮暗各挂一个隐藏元素，直接问 tokens.css 要值 ——
+        这个文件里不复制任何颜色/长度/时长，皮肤改了这个页面跟着改。
+     ② 编排：WAAPI 驱动"注册过的令牌"（@property 注册过才能插值）。
+        真页面的做法是属性当场改、注册过的令牌由过渡接住；这里同源，
+        差别只在哪几处硬切被额外接管了。
+     ③ 读数：每帧采样这些属性，凡"只在相邻两帧之间变过一次"的，
+        就是被一帧硬切掉的 —— 这就是"单帧完成"那一行。
+     ============================================================ */
+  (() => {
+    const SKINS = ['paper', 'grid', 'clay'];
+    const LABEL = { paper: '纸白', grid: '点阵', clay: '暖陶' };
+    const PHRASE = 'Type something';
+    const TOKENS = ['--bg', '--surface', '--surface-2', '--surface-raised', '--panel-bg',
+      '--panel-shadow-color', '--scrim', '--slider-fill', '--tile-hover', '--border',
+      '--border-strong', '--text', '--text-2', '--text-3', '--ring', '--panel-r', '--slider-r', '--dot'];
+    const NICE = { fontFamily: '引导语字脸', '--dot': '点阵纹样', shadow: '菜单投影' };
+    // 四种编排：face=字脸交叉淡入、stagger=逐字错峰、shift=先字后景、dot=点阵淡入、shadow=投影过渡
+    const VERSIONS = {
+      a0: { face: 0, stagger: 0, shift: 0, dot: 0, shadow: 0 },
+      a1: { face: 1, stagger: 0, shift: 0, dot: 1, shadow: 1 },
+      a2: { face: 1, stagger: 0, shift: 1, dot: 1, shadow: 1 },
+      a3: { face: 1, stagger: 1, shift: 1, dot: 1, shadow: 1 },
+    };
+    const RATIO = { face: .6, shift: .405, stagger: .062 };   // 都以 --dur-theme 为基准
+
+    /* ---------- ① 探针 ---------- */
+    const probe = document.createElement('div');
+    probe.className = 'sk-probes';
+    const probeList = [];
+    for (const skin of SKINS) for (const theme of ['light', 'dark']) {
+      const el = document.createElement('div');
+      el.setAttribute('data-style', skin);
+      if (theme === 'dark') el.setAttribute('data-theme', 'dark');
+      probe.append(el);
+      probeList.push([skin + '|' + theme, el]);
+    }
+    document.body.append(probe);
+    const VALUE = {};
+    for (const [key, el] of probeList) {
+      const cs = getComputedStyle(el), o = {};
+      for (const k of TOKENS) o[k] = cs.getPropertyValue(k).trim();
+      o.shadow = cs.getPropertyValue('--menu-shadow').trim();
+      o.fontFamily = cs.fontFamily;
+      VALUE[key] = o;
+    }
+    const BASE_DUR = parseFloat(getComputedStyle(probeList[0][1]).getPropertyValue('--dur-theme')) || 0;
+    const BASE_EASE = getComputedStyle(probeList[0][1]).getPropertyValue('--ease-mid').trim() || 'linear';
+
+    /* ---------- ② 样张 ---------- */
+    const SAMPLES = [];
+    for (const host of document.querySelectorAll('[data-sk]')) {
+      host.append(document.querySelector('#skin-face').content.cloneNode(true));
+      host.setAttribute('data-style', 'paper');
+      for (const q of host.querySelectorAll('.sk-qa, .sk-qb')) {
+        for (const ch of PHRASE) q.append(Object.assign(document.createElement('span'), { textContent: ch }));
+      }
+      const s = {
+        host,
+        kind: host.dataset.sk,
+        opts: VERSIONS[host.dataset.sk],
+        qa: host.querySelector('.sk-qa'),
+        qb: host.querySelector('.sk-qb'),
+        menu: host.querySelector('.sk-menu'),
+        skin: 'paper',
+        theme: 'light',
+        anims: [],
+        samples: [],
+        total: 0,
+        world: BASE_DUR,
+        ease: BASE_EASE,
+      };
+      s.qa.style.opacity = '0';
+      s.qb.style.opacity = '1';
+      SAMPLES.push(s);
+    }
+
+    const read = (s) => {
+      const cs = getComputedStyle(s.host), o = {};
+      for (const k of TOKENS) o[k] = cs.getPropertyValue(k).trim();
+      o.shadow = getComputedStyle(s.menu).boxShadow;
+      o.fontFamily = getComputedStyle(s.qb).fontFamily;
+      // 透明度会相乘：父层是交叉淡入，子层是逐字错峰，两边都要算进来
+      o.qOpacity = String(Number(getComputedStyle(s.qb).opacity)
+        * Number(getComputedStyle(s.qb.children[0]).opacity));
+      return o;
+    };
+    const sample = (s, t) => s.samples.push({ t, v: read(s) });
+
+    const apply = (s, skin, theme) => {
+      s.skin = skin; s.theme = theme;
+      s.host.setAttribute('data-style', skin);
+      if (theme === 'dark') s.host.setAttribute('data-theme', 'dark');
+      else s.host.removeAttribute('data-theme');
+      s.host.querySelector('.sk-skin').textContent = LABEL[skin];
+    };
+
+    const begin = (s, skin, theme) => {
+      const o = s.opts;
+      s.anims.forEach((a) => a.cancel());
+      s.anims = [];
+      s.samples = [];
+      sample(s, -1);
+      const from = read(s);
+      const to = VALUE[skin + '|' + theme];
+      // 每次切换都重新读一次 --dur-theme：reduced-motion 会把这一层的时长归零，
+      // 只在初始化时缓存一次的话，逐字错峰在"减少动态效果"下照样会跑满 590ms。
+      const dur = parseFloat(getComputedStyle(s.host).getPropertyValue('--dur-theme'));
+      const world = s.world = Number.isFinite(dur) ? dur : BASE_DUR;
+      const ease = s.ease;
+      const faceDur = world * RATIO.face;
+      const shift = o.shift ? world * RATIO.shift : 0;
+      s.total = world + shift;
+
+      // 真页面的做法：属性当场改，没被动画接管的就当场硬切
+      apply(s, skin, theme);
+
+      // 字脸：旧脸锁在切换前的字面上；新脸跟着 data-style 走
+      s.qa.style.fontFamily = from.fontFamily;
+      if (!o.face) {
+        s.qa.style.opacity = '0'; s.qb.style.opacity = '1';
+      } else if (o.stagger) {
+        // 从字首往字尾错峰扫过去：新脸一个个浮起、旧脸一个个退掉，
+        // 每字都在自己那一格里完成交叉 —— 字脸那一刻的离散被摊到十几帧。
+        const step = world * RATIO.stagger;
+        s.qa.style.opacity = '1'; s.qb.style.opacity = '1';
+        [...s.qa.children].forEach((ch, i) => s.anims.push(ch.animate(
+          [{ opacity: 1 }, { opacity: 0 }],
+          { duration: faceDur, delay: i * step, easing: ease, fill: 'both' })));
+        [...s.qb.children].forEach((ch, i) => s.anims.push(ch.animate(
+          [{ opacity: 0 }, { opacity: 1 }],
+          { duration: faceDur, delay: i * step, easing: ease, fill: 'both' })));
+      } else {
+        s.anims.push(s.qa.animate([{ opacity: 1 }, { opacity: 0 }], { duration: faceDur, easing: ease, fill: 'both' }));
+        s.anims.push(s.qb.animate([{ opacity: 0 }, { opacity: 1 }], { duration: faceDur, easing: ease, fill: 'both' }));
+      }
+
+      // 世界：18 条令牌一起走；--dot 没被接管时，点阵就是那一帧硬切
+      const keys = TOKENS.filter((k) => o.dot || k !== '--dot');
+      s.anims.push(s.host.animate([
+        Object.fromEntries(keys.map((k) => [k, from[k] || 'transparent'])),
+        Object.fromEntries(keys.map((k) => [k, to[k]])),
+      ], { duration: world, delay: shift, easing: ease, fill: 'both' }));
+
+      // 投影：@property 没有 <shadow> 语法，注册不了，只能让消费方自己过渡
+      if (o.shadow) {
+        s.anims.push(s.menu.animate([{ boxShadow: from.shadow }, { boxShadow: to.shadow }],
+          { duration: world, delay: shift, easing: ease, fill: 'both' }));
+      }
+
+      // 先把动画压到 0 再采样：否则 getComputedStyle 读到的还是动画生效前的值，
+      // 字脸那一下会被误判成"看得见"（A1–A3 会假报一跳）
+      s.anims.forEach((a) => { a.pause(); a.currentTime = 0; });
+      s.last = { skin, theme };
+      sample(s, 0);
+    };
+
+    /* ---------- ③ 读数：谁被一帧硬切了 ---------- */
+    const report = (s) => {
+      const list = s.samples, times = {}, first = {};
+      for (let i = 1; i < list.length; i++) {
+        for (const k in list[i].v) {
+          if (list[i].v[k] === list[i - 1].v[k]) continue;
+          times[k] = (times[k] || 0) + 1;
+          if (first[k] === undefined) first[k] = i;
+        }
+      }
+      const hits = [];
+      for (const k in times) {
+        if (times[k] !== 1) continue;                                    // 逐帧走过 = 不算跳
+        if (list[0].v[k] === list[list.length - 1].v[k]) continue;        // 压根没变 = 不算
+        if (k === 'fontFamily') {                                        // 字脸离散，只有"新脸已经看得见"时才叫跳
+          // 判据只看变化之后那一刻：旧脸还在、新脸是 0，观众看到的还是旧脸，不算跳
+          if (Number(list[first[k]].v.qOpacity) <= .05) continue;
+        }
+        hits.push((NICE[k] || k) + ' @' + Math.round(list[first[k]].t) + 'ms');
+      }
+      const out = s.host.parentElement.querySelector('[data-sk-cuts]');
+      const reduced = s.world === 0;
+      out.textContent = reduced ? 'reduced-motion：时长归零，一帧到位'
+        : (hits.length ? hits.join('、') : '无（全是逐帧走完的）');
+      out.classList.toggle('is-hit', hits.length > 0 && !reduced);
+      return hits;
+    };
+
+    /* ---------- 时间轴：四张共用一格 ---------- */
+    const bar = document.querySelector('[data-sk-bar]');
+    const clock = document.querySelector('[data-sk-clock]');
+    const span = () => Math.max(...SAMPLES.map((s) => s.total), 1);
+    let playing = false, raf = 0, last = 0, cursor = 0;
+
+    const seekAll = (t) => {
+      cursor = Math.max(0, Math.min(span(), t));
+      SAMPLES.forEach((s) => s.anims.forEach((a) => {
+        a.pause();
+        a.currentTime = Math.max(0, Math.min(s.total, cursor));
+      }));
+      bar.max = String(Math.round(span()));
+      bar.value = String(Math.round(cursor));
+      clock.textContent = Math.round(cursor) + 'ms';
+    };
+    const step = (now) => {
+      if (!playing) return;
+      const dt = now - last;
+      last = now;
+      seekAll(cursor + dt);
+      SAMPLES.forEach((s) => sample(s, cursor));
+      if (cursor >= span() - 1) stop(); else raf = requestAnimationFrame(step);
+    };
+    const play = () => {
+      if (playing) return;
+      if (cursor >= span() - 1) SAMPLES.forEach((s) => begin(s, s.last.skin, s.last.theme));
+      playing = true;
+      last = performance.now();
+      raf = requestAnimationFrame(step);
+    };
+    const stop = () => {
+      playing = false;
+      cancelAnimationFrame(raf);
+      SAMPLES.forEach((s) => {
+        s.anims.forEach((a) => a.cancel());
+        s.anims = [];
+        s.qa.style.opacity = '0';
+        s.qb.style.opacity = '1';
+        sample(s, cursor);
+        report(s);
+      });
+    };
+    const reset = () => {
+      playing = false;
+      cancelAnimationFrame(raf);
+      SAMPLES.forEach((s) => {
+        s.anims.forEach((a) => a.cancel());
+        s.anims = [];
+        s.qa.style.fontFamily = '';
+        s.qa.style.opacity = '0';
+        s.qb.style.opacity = '1';
+        apply(s, 'paper', 'light');
+        s.total = 0;
+        s.last = { skin: 'paper', theme: 'light' };
+        s.samples = [];
+        sample(s, 0);
+        const out = s.host.parentElement.querySelector('[data-sk-cuts]');
+        out.textContent = '—';
+        out.classList.remove('is-hit');
+      });
+      cursor = 0;
+      seekAll(0);
+    };
+
+    /* ---------- 控件 ---------- */
+    document.querySelector('[data-sk-play]').addEventListener('click', play);
+    document.querySelector('[data-sk-reset]').addEventListener('click', reset);
+    document.querySelector('[data-sk-seq]').addEventListener('click', () => {
+      reset();
+      SAMPLES.forEach((s) => begin(s, 'grid', 'light'));
+      seekAll(0);
+      play();
+    });
+    bar.addEventListener('input', () => {
+      playing = false;
+      cancelAnimationFrame(raf);
+      seekAll(Number(bar.value));
+      SAMPLES.forEach((s) => sample(s, cursor));
+    });
+    document.querySelector('[data-sk-slow]').addEventListener('change', (e) => {
+      SAMPLES.forEach((s) => {
+        s.world = e.target.checked ? BASE_DUR * 3 : BASE_DUR;
+        if (e.target.checked) s.host.style.setProperty('--dur-theme', (BASE_DUR * 3 / 1000) + 's');
+        else s.host.style.removeProperty('--dur-theme');
+      });
+      reset();
+    });
+    document.querySelectorAll('[data-sk-go]').forEach((btn) => btn.addEventListener('click', () => {
+      const s = SAMPLES.find((x) => x.kind === btn.dataset.skGo);
+      reset();
+      begin(s, btn.dataset.skTo, s.theme);
+      seekAll(0);
+      play();
+    }));
+    document.querySelectorAll('[data-sk-dark]').forEach((btn) => btn.addEventListener('click', () => {
+      const s = SAMPLES.find((x) => x.kind === btn.dataset.skDark);
+      const theme = s.theme === 'dark' ? 'light' : 'dark';
+      reset();
+      begin(s, s.skin, theme);
+      seekAll(0);
+      play();
+    }));
+  })();
 </script>
 
 </body>

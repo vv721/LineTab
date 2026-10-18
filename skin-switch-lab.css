@@ -1,0 +1,106 @@
+/* ============================================================
+   「07 换皮肤：焦点 / 背景 / 配色三拍」的样式与注册表。
+   只服务体验台（不在 scripts/runtime-files.mjs 白名单里，不进安装包）。
+
+   分工：
+   - 这里只管样张长什么样：一块缩小的真页面（底 + 引导语 + 搜索线 + 菜单卡 + 设置卡）。
+   - 编排（谁先谁后、哪条属性插值）由页面里的脚本用 WAAPI 驱动注册过的令牌完成，
+     所以没有 transition / animation —— 那样就没法定格与拖动时间轴。
+   ============================================================ */
+
+/* 这一节用到的、details-lab.css 里还没注册的那几条（@property 是全局注册）。
+   --dot 注册成 <color> 之后，点阵的"有 / 无"就变成一次颜色插值，
+   不再是一帧换掉的 background-image（图像插不了值）。 */
+@property --panel-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --panel-shadow-color { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --scrim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --slider-fill { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --panel-r { syntax: '<length>'; inherits: true; initial-value: 12px; }
+@property --slider-knob { syntax: '<length>'; inherits: true; initial-value: 10px; }
+@property --slider-r { syntax: '<length>'; inherits: true; initial-value: 5px; }
+@property --dot { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --slider-frac { syntax: '<number>'; inherits: true; initial-value: .5; }
+
+/* ---------- 样张：一块缩小的真页面 ---------- */
+/* 样张是"缩小的一页"：引导语在上半部，卡片压在下半部，两者不叠 —— 和真页面一样 */
+.sk-stage {
+  position: relative; width: 336px; height: 226px; overflow: hidden;
+  display: grid; justify-items: center; align-content: start; padding-top: 26px;
+  background-color: var(--bg);
+  /* 点阵这一层四套都在，只有 --dot 在变 —— 这样"点子出现"才是淡入而不是整层换掉 */
+  background-image: radial-gradient(var(--dot, transparent) 1px, transparent 1px);
+  background-size: var(--dot-size, 18px) var(--dot-size, 18px);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--panel-r);
+  color: var(--text);
+}
+
+.sk-field { display: grid; justify-items: center; margin-top: 4px; }
+.sk-q {
+  position: relative; margin: 0 0 calc(var(--mark-gap) * .34);
+  font-family: var(--font-display); font-size: calc(var(--mark-size) * .76);
+  font-weight: var(--fw-regular); letter-spacing: var(--ls-tight);
+  line-height: var(--lh-tight); white-space: pre;
+}
+/* 两份字完全对位：旧的只负责在过场里退场，所以不进可访问性树 */
+.sk-qa { position: absolute; inset: 0; user-select: none; }
+.sk-search {
+  display: flex; align-items: center; gap: 8px; width: 236px; padding-bottom: 6px;
+  border-bottom: var(--hairline) solid var(--border-strong); color: var(--text-3);
+}
+.sk-hint { margin-left: auto; }
+
+.sk-panel {
+  position: absolute; right: 10px; bottom: 12px; width: 172px; padding: 2px 0;
+  background: var(--panel-bg); border: var(--panel-border);
+  border-radius: var(--panel-r); box-shadow: var(--panel-shadow);
+}
+.sk-row, .sk-srow { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
+.sk-row + .sk-row, .sk-srow { border-top: var(--hairline) solid var(--border); }
+.sk-rl { color: var(--text-2); }
+.sk-rv { margin-left: auto; color: var(--text-2); }
+/* 点阵那套把层级倒过来：标签浅、读数深（读数条的重点是数字） */
+[data-style="grid"] .sk-rl { color: var(--text-3); }
+[data-style="grid"] .sk-rv { color: var(--text); }
+
+/* 滑块：填充与圆头共用 --slider-frac，行程 = 62px 轨 - 一个头（头的大小走 --slider-knob，
+   换肤时这里也跟着变，别再写死 12 / 6 那两个数） */
+.sk-sl { position: relative; width: 62px; height: 12px; flex: none; }
+.sk-track {
+  position: absolute; top: 50%; left: 0; right: 0; height: 4px; margin-top: -2px;
+  border-radius: var(--slider-r); background: var(--border-strong);
+}
+.sk-fill {
+  position: absolute; top: 50%; left: 0; height: 4px; margin-top: -2px;
+  width: calc(var(--slider-knob) / 2 + var(--slider-frac, .5) * (62px - var(--slider-knob)));
+  border-radius: var(--slider-r); background: var(--slider-fill);
+}
+.sk-knob {
+  position: absolute; top: 50%;
+  left: calc(var(--slider-knob) / 2 + var(--slider-frac, .5) * (62px - var(--slider-knob)));
+  width: var(--slider-knob); height: var(--slider-knob);
+  margin: calc(var(--slider-knob) / -2) 0 0 calc(var(--slider-knob) / -2);
+  border-radius: var(--slider-r); background: var(--slider-fill);
+}
+
+.sk-menu {
+  position: absolute; left: 12px; bottom: 12px; width: 138px; padding: 8px 10px;
+  color: var(--text-2);
+  background: var(--surface-raised); border: var(--panel-border);
+  border-radius: var(--panel-r); box-shadow: var(--menu-shadow);
+}
+.sk-menu b { display: block; margin-bottom: 4px; color: var(--text); font-weight: var(--fw-medium); }
+
+/* reduced-motion 兜底：details-lab.css 那条只作用于 [data-demo]，
+   07 节的样张不在那个作用域里 —— 少了这一条，逐字错峰会照跑（真页面由 D1 的兜底管）。 */
+@media (prefers-reduced-motion: reduce) {
+  [data-sk], .sk-probes { --dur-theme: 0s; }
+}
+
+/* ---------- 控件与读数 ---------- */
+.sk-bar { width: 240px; accent-color: var(--ring); }
+.sk-cuts { color: var(--text-2); }
+/* 出现"单帧完成"时给一点提醒色：用的是暖陶的珊瑚，不新增令牌 */
+.sk-cuts.is-hit { color: var(--coral-500); }
+.sk-ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sk-probes { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; overflow: hidden; }

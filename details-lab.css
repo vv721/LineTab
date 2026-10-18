@@ -195,3 +195,334 @@
 .lab-term .d-tag { color: var(--text-3); }
 .lab-term:focus-within .lab-tprompt,
 .lab-term:focus-within .d-tag { color: var(--text-2); }
+
+/* ============================================================
+   05 亮暗切换的过场 —— 三种"整体一起换"的做法
+   · D1 逐色渐变：语义色注册成可插值的 <color>，材质与墨迹同一条曲线一起走
+   · D2 中点翻转：材质平滑走完，墨迹不插值 —— 在材质"值的中转点"那一帧直换
+   · D3 曝光过场：颜色直接换，过渡只落在整块亮度上（先压暗/先提亮再回落）
+   三种都不引入空间方向（不从某点扩散、也不从一头扫到另一头）。
+   时长与曲线各有单一来源：--dur-theme / --ease-mid；慢放与"关动效"都只改时长，JS 也从 CSS 读它。
+
+   一个绕不开的几何事实（下面两版的做法都是冲着它去的）：亮底黑字换成暗底白字，
+   墨迹的灰度与底色的灰度**必然**在某一刻相等 —— 那一刻文字看不见。差别只在：
+   它持续多久、以及那一刻画面在做什么。D1 把这一刻放在斜率最大处（一两帧就过去），
+   D2 干脆不插值（不产生这一刻），D3 用一次亮度呼吸把这一刻盖住。
+   （第一版 D1 曾让材质先跑、墨迹延迟 30% 跟上，实测出 134ms 的"文字消失"窗口 —— 已废。）
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   D1 的前置：把语义色注册成"可以算中间值"的颜色
+   没注册的自定义属性只有"整块跳变"一种可能；注册成 <color> 之后，
+   浏览器才愿意在亮值/暗值之间插值 —— 这是 D1 与"硬切"唯一的差别。
+   只注册这一页用得到的语义色；--dot 故意不注册（点阵只给 C 点阵用，这页不出现）。
+   ------------------------------------------------------------ */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface-raised { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --tile-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --border { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --border-strong { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text-2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text-3 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --ring { syntax: '<color>'; inherits: true; initial-value: transparent; }
+
+/* ------------------------------------------------------------
+   体验台自己的零件（只有这一节用）
+   ------------------------------------------------------------ */
+.theme-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lab-btn {
+  height: 30px;
+  padding: 0 14px;
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-md);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.lab-btn:hover { color: var(--text); border-color: var(--text-3); }
+.lab-btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+.lab-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-md);
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.lab-check input { accent-color: var(--ring); }
+
+.theme-row { align-items: flex-start; }
+.theme-cell { display: flex; flex-direction: column; gap: 12px; }
+
+.demo { position: relative; width: 560px; }
+
+/* 一张"完整的渲染"：它自己带底色/文字色/描边，所以 D2 能放两张互相叠 */
+.demo-face {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 30px 34px 32px;
+  background-color: var(--bg);
+  color: var(--text);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.demo-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.demo-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background-color: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.demo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+}
+
+/* 借一行"正被指着"的行，把 --tile-hover 这个半透明层也放进过场里看 */
+.demo-row[data-hover] { background-color: var(--tile-hover); }
+
+.demo-rl { font-size: var(--font-md); color: var(--text-2); }
+.demo-rv { font-size: var(--font-md); color: var(--text-3); }
+
+.theme-ctl { display: flex; align-items: baseline; gap: 16px; }
+.lab-state { font-size: var(--font-md); color: var(--text-2); }
+.lab-state b { font-weight: var(--fw-medium); color: var(--text); }
+.lab-note { font-size: var(--font-md); color: var(--text-3); }
+
+.lab-sub code,
+.lab-note code { font-family: var(--font-mono); font-size: var(--font-sm); }
+
+/* ------------------------------------------------------------
+   D1 逐色渐变
+   材质与墨迹同一条曲线、同一个时长 —— 十一个语义色一起走。
+   要点全在曲线：--ease-mid 的斜率最大值在中点，而"墨迹撞上底色"正好发生在中点，
+   于是撞上的窗口只有一两帧；换成 --ease（强 ease-out）窗户会宽一倍有余。
+   也不给墨迹加延迟：延迟只会让"底色已经暗了、字还黑着"这种真·看不见持续更久。
+   ------------------------------------------------------------ */
+[data-demo="d1"] {
+  transition:
+    --bg var(--dur-theme) var(--ease-mid),
+    --surface var(--dur-theme) var(--ease-mid),
+    --surface-2 var(--dur-theme) var(--ease-mid),
+    --surface-raised var(--dur-theme) var(--ease-mid),
+    --tile-hover var(--dur-theme) var(--ease-mid),
+    --border var(--dur-theme) var(--ease-mid),
+    --border-strong var(--dur-theme) var(--ease-mid),
+    --text var(--dur-theme) var(--ease-mid),
+    --text-2 var(--dur-theme) var(--ease-mid),
+    --text-3 var(--dur-theme) var(--ease-mid),
+    --ring var(--dur-theme) var(--ease-mid);
+}
+
+/* ------------------------------------------------------------
+   D2 中点翻转
+   材质照 D1 平滑走完；墨迹**完全不插值** —— 时长 0 + 半程延迟，到点那一帧直接换过去。
+   为什么是半程：--ease-mid 是对称曲线，走完一半时间正好也走完一半颜色，
+   此时底色停在两端的中点（浅底 249 与深底 24 的中点 ≈ 136）。
+   这个"中转点"是唯一让新旧两套墨迹都不吃亏的位置：黑字对 136 是约 5.3:1、白字是约 3.6:1，
+   两边都还看得清 —— 所以哪怕文字极性当场翻过来，也不刺眼。
+   换早换晚都会有一侧掉到 2:1 以下（算过：底色在 200 时白字只有 1.2:1）。
+   ------------------------------------------------------------ */
+[data-demo="d2"] {
+  transition:
+    --bg var(--dur-theme) var(--ease-mid),
+    --surface var(--dur-theme) var(--ease-mid),
+    --surface-2 var(--dur-theme) var(--ease-mid),
+    --surface-raised var(--dur-theme) var(--ease-mid),
+    --tile-hover var(--dur-theme) var(--ease-mid),
+    --border var(--dur-theme) var(--ease-mid),
+    --border-strong var(--dur-theme) var(--ease-mid),
+    --text 0s linear calc(var(--dur-theme) * .5),
+    --text-2 0s linear calc(var(--dur-theme) * .5),
+    --text-3 0s linear calc(var(--dur-theme) * .5),
+    --ring 0s linear calc(var(--dur-theme) * .5);
+}
+
+/* ------------------------------------------------------------
+   D3 曝光过场
+   颜色不插值（它要的就是"直接换"），过渡只落在亮度上：
+   往暗走先压一口气、在亮度最低那一刻换掉、再回到正常；往亮走反过来先提亮。
+   曲线这里仍用 --ease（强 ease-out）：亮度要一上来就压下去、并停在那儿等换色，
+   而不是像 D1/D2 那样对称地起落 —— 这是它和上面两版唯一的语气差别。
+   ------------------------------------------------------------ */
+[data-demo="d3"].is-dip .demo-face { animation: lab-dip var(--dur-theme) var(--ease) both; }
+[data-demo="d3"].is-lift .demo-face { animation: lab-lift var(--dur-theme) var(--ease) both; }
+
+@keyframes lab-dip {
+  0%, 100% { filter: none; }
+  45% { filter: brightness(.88); }
+}
+
+@keyframes lab-lift {
+  0%, 100% { filter: none; }
+  45% { filter: brightness(1.12); }
+}
+
+/* 系统里关了动效：只把时长归零，三种过场就各自退化成"直接切换" */
+@media (prefers-reduced-motion: reduce) {
+  [data-demo] { --dur-theme: 0s; }
+}
+
+/* ============================================================
+   06 面板与二级菜单怎么分层（暖陶）—— 五种"分层手段"
+   问题（用户 m01541）：设置面板与它展开的二级菜单**同色** —— 两边都取 --surface-raised
+   （浅色 #efe9de、深色 #252320），只剩一条 1px 发丝线分界，桌面上看就是糊在一起。
+   规范（DESIGN-claude.md）里能查到的依据：
+     · Elevation：深度主要来自色块，阴影罕见 —— 所以第一解法永远是"换一档表面"；
+     · Do/Don't：「Don't repeat the same surface mode in two consecutive bands」——
+       面板与菜单叠在一起还用同一种表面，正好踩在这条禁则上；
+     · 规范给的表面档位只有：canvas #faf9f5 / soft #f5f0e8 / card #efe9de /
+       cream-strong #e8e0d2（语义是 selected / emphasized）与暗面 #181715（+ 两档暗面浮起）。
+   六张样张结构完全相同（模板只写一份），差别只在下面这几条"给菜单换一档"的规则上。
+   ============================================================ */
+
+/* ---- 样张骨架：几何 1:1 抄 LineTab/newtab.css（面板 300/padding 6、行 36、
+        菜单 top 36/right 0/min-width 152/padding 4、选项 32） ---- */
+/* 样张只有 300px 宽，比 05 节的 560px 窄，所以给这一节的行留出与 05 节同宽的说明区，
+   否则那句机理文字会被挤成一列窄条（第一版实拍踩到过）。 */
+.lay-cell { width: 560px; }
+
+.lay-demo {
+  position: relative;
+  width: 300px;
+}
+
+.lay-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background-color: var(--panel-bg);
+  border: var(--panel-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--panel-shadow);
+}
+
+.lay-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  font-size: var(--font-md);
+}
+
+.lay-rl { color: var(--text); }
+
+.lay-rv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: var(--font-md);
+}
+
+.lay-chev { width: 14px; height: 14px; }
+
+.lay-menu {
+  position: absolute;
+  z-index: 2;
+  top: 36px;
+  right: 0;
+  min-width: 152px;
+  padding: 4px;
+  background-color: var(--surface-raised);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.lay-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: var(--font-md);
+}
+
+.lay-opt.is-on { color: var(--text); }
+.lay-opt.lay-action { border-top: var(--hairline) solid var(--border); }
+
+.lay-check { width: 14px; height: 14px; visibility: hidden; }
+.lay-opt.is-on .lay-check { visibility: visible; }
+
+/* ---- V1 再深一档：菜单换成规范里的 surface-cream-strong（"被强调/被选中"那一档）。
+        浅色下一眼能看出菜单比底板深一手；深色那边表面只有三档，
+        所以改成把底板降一档（surface-dark-soft）、菜单留在 elevated。 ---- */
+.lay-demo[data-lay="v1"] .lay-menu { background-color: var(--cream-300); }
+.lay-demo[data-theme="dark"][data-lay="v1"] .lay-panel { background-color: var(--dark-warm-soft); }
+.lay-demo[data-theme="dark"][data-lay="v1"] .lay-menu { background-color: var(--dark-warm-raised); }
+
+/* ---- V2 反向下沉：菜单退到画布那一档，成为"面板上的一扇窗"（谁更像底，一眼分得清）。 ---- */
+.lay-demo[data-lay="v2"] .lay-menu { background-color: var(--cream-50); }
+.lay-demo[data-theme="dark"][data-lay="v2"] .lay-menu { background-color: var(--dark-warm); }
+
+/* ---- V3 投影：颜色一格不动，分层完全交给一层暖墨投影。
+        这是规范里唯一被写到的阴影手段，但规范只给了 `0 1px 3px rgb(20 20 19 / 8%)`
+        并且限定"罕见、只在 hover 抬升时"；--shadow-warm 是**有意放大**过的一版。
+        另外它有个已知短板：深色主题（#181715 上再投影）几乎看不出层次，
+        而本项目早就裁过"深色不用阴影分层"（--shadow-1: none）。 ---- */
+.lay-demo[data-lay="v3"] .lay-menu { box-shadow: var(--shadow-warm); }
+
+/* ---- V4 换表面模式：菜单直接用暗色 chrome（规范里奶油↔暗面的交替就是它的分段机制）。
+        深色那边菜单仍是 #181715、底板是 #252320，方向变了但"整块换表面"这件事没变。 ---- */
+.lay-demo[data-lay="v4"] .lay-menu {
+  background-color: var(--dark-warm);
+  border-color: var(--w-12);
+}
+
+.lay-demo[data-lay="v4"] .lay-opt { color: var(--on-dark-warm-soft); }
+.lay-demo[data-lay="v4"] .lay-opt.is-on { color: var(--on-dark-warm); }
+.lay-demo[data-lay="v4"] .lay-opt.lay-action { border-top-color: var(--w-12); }
+
+/* ---- V5 就地展开：菜单不进浮层，变成面板里的一段内嵌清单 —— 下面的行被推开。
+        这一版**故意不改颜色**（仍旧是 --surface-raised）：分层由结构负责，
+        颜色根本不用动，也就不存在"两层同色糊在一起"这个问题。 ---- */
+.lay-demo[data-lay="v5"] .lay-row:has(.lay-menu) {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 36px auto;   /* 第一行与其它行等高，否则"默认搜索引擎"那一行会矮一截 */
+  height: auto;
+  padding: 6px 10px 10px;
+}
+
+.lay-demo[data-lay="v5"] .lay-row:has(.lay-menu) .lay-menu {
+  position: static;
+  grid-column: 1 / -1;
+  margin-top: 6px;
+}

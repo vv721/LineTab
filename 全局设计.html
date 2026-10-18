@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>全局设计 · E 暖陶（引导语 · 参数可调）</title>
+
+<!-- 取值只有一个来源：扩展本体里的 LineTab/tokens.css。
+     字段与布局来自 LineTab/newtab.css —— 这条线就是真页面那条线；
+     看稿外壳与 E 暖陶 的组件修正来自 preview.css；本页新增的只有 global.css 那几行。
+     这一页只有暖陶一套风格：按你说的，探索阶段不用把别的风格也改过去。 -->
+<link rel="stylesheet" href="LineTab/tokens.css">
+<link rel="stylesheet" href="LineTab/newtab.css">
+
+<link rel="stylesheet" href="preview.css">
+<link rel="stylesheet" href="global.css">
+</head>
+<body>
+
+<!-- 参数面板：你要的"可以发挥的空间"就是这五个，直接拉，实时生效。
+     说明行与面板排进同一个贴底的容器里，工具条折行变高也不会盖住按钮。 -->
+<div class="dock">
+<div class="bar">
+  <label class="ctl">
+    <span>引导语字号</span>
+    <input type="range" data-param="size" min="20" max="64" step="1" value="41">
+    <output id="o-size">32px</output>
+  </label>
+  <label class="ctl">
+    <span>与线的间隔</span>
+    <input type="range" data-param="gap" min="0" max="72" step="1" value="55">
+    <output id="o-gap">32px</output>
+  </label>
+  <div class="seg" role="group" aria-label="引导语相对线的水平对齐">
+    <button type="button" data-align="center" aria-pressed="true">标居中</button>
+    <button type="button" data-align="start" aria-pressed="false">标左缘</button>
+    <button type="button" data-align="end" aria-pressed="false">标右缘</button>
+  </div>
+  <label class="ctl">
+    <span>搜索线偏移</span>
+    <input type="range" data-param="dx" min="-120" max="120" step="4" value="0">
+    <output id="o-dx">0px</output>
+  </label>
+  <label class="ctl">
+    <span>整组竖直</span>
+    <input type="range" data-param="dy" min="-40" max="40" step="0.5" value="-12">
+    <output id="o-dy">0%</output>
+  </label>
+  <button type="button" data-dark aria-pressed="false">暗色</button>
+  <button type="button" data-reset>重置</button>
+</div>
+
+<p class="v-note" id="note"></p>
+</div>
+
+<section class="stage" data-style="clay" data-focus="line" data-lead="icon" data-align="center" data-active>
+  <main class="page">
+    <div class="fieldbox">
+      <!-- 原来"品牌标"那一格：现在是一句引导语（字体 / 字重 / 字距都按 Claude 规范的 display 走）。
+           位置在搜索线**上方**；字号、间隔、水平对齐都由工具条上的参数控制。 -->
+      <p class="g-mark" aria-hidden="true">Type something</p>
+
+      <!-- 下面这条线就是真页面那条线，一个零件没动 -->
+      <form class="search" role="search">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="M16 16l4.5 4.5"></path>
+        </svg>
+        <span class="prompt" aria-hidden="true">&gt;</span>
+        <input class="q" type="text" autocomplete="off" spellcheck="false"
+               placeholder="搜索" aria-label="搜索">
+        <span class="tag">Bing</span>
+      </form>
+    </div>
+
+    <button class="settings" type="button" aria-label="设置" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 8h9M19 8h1M4 16h3M13 16h7"></path>
+        <circle cx="15.5" cy="8" r="2"></circle>
+        <circle cx="9.5" cy="16" r="2"></circle>
+      </svg>
+    </button>
+
+    <div class="panel" role="dialog" aria-label="设置" hidden>
+      <div class="row">
+        <span class="rl">默认搜索引擎</span>
+        <button class="rv" type="button" aria-label="默认搜索引擎">
+          <span>Bing</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">搜索框左侧</span>
+        <button class="rv" type="button" aria-label="搜索框左侧">
+          <span>放大镜</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">焦点反馈</span>
+        <button class="rv" type="button" aria-label="焦点反馈">
+          <span>深灰细线</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">暗色</span>
+        <button class="rv" type="button" aria-label="暗色">
+          <span>跟随系统</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">风格</span>
+        <button class="rv" type="button" aria-label="风格">
+          <span>E 暖陶</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ===== 五个参数各改什么（看稿记录，不属于设计稿；截图与 bare=1 都不会带它出来）===== -->
+<section class="refs">
+  <h2 class="refs-title">全局设计 · 五个可调参数</h2>
+  <p class="refs-note">整页只有两个元素：搜索线上方那句引导语 + 那条线。你说的"可以发挥的空间"就是下面这五个；工具条上直接拉，实时生效。「重置」回到默认值。</p>
+
+  <table class="refs-table">
+    <thead><tr><th>参数</th><th>范围</th><th>默认</th><th>它改的是什么</th><th>依据</th></tr></thead>
+    <tbody>
+      <tr><td>引导语字号</td><td>20–64px</td><td>32px（<code>--font-2xl</code>）</td><td>标的视觉重量（重量公式里"尺寸"这一项）</td><td>规范的 display 刻度 28 / 36 / 48 是三个锚点</td></tr>
+      <tr><td>与线的间隔</td><td>0–72px</td><td>32px（规范 spacing.xl）</td><td>标与线是读成"一组"还是"两件事"</td><td>光学居中要按大写高度对齐；本项目的间距刻度 4 / 8 / 12 / 20 / 32 / 52 / 84</td></tr>
+      <tr><td>标相对线的水平对齐</td><td>居中 / 左缘 / 右缘</td><td>居中</td><td>引导词的位置</td><td>居中 / 对称是"允许覆盖三分法"的更强意图；左缘是刊头式非对称</td></tr>
+      <tr><td>搜索线横向偏移</td><td>−120 – +120px</td><td>0（居中）</td><td>搜索框的位置</td><td>默认不动它 —— 这一格只是让你亲手确认"居中确实最稳"</td></tr>
+      <tr><td>整组竖直偏移</td><td>−12% – +12%（视口高）</td><td>0（几何居中）</td><td>二者视作整体时的落点</td><td>"数学居中常常看着不居中"：光学中心通常比几何中心略高，所以正数会往下、负数往上</td></tr>
+      <tr class="refs-deviate"><td>不动的</td><td colspan="4">搜索线一个零件没动（左侧放大镜或设置里的 <code>&gt;</code> 提示符、框里占位文案「搜索」、右侧引擎标签、底线与聚焦态）；面板仍是 5 行、没有新增设置项；不加时钟、不加宫格、不带任何上几轮被否掉的元素</td></tr>
+    </tbody>
+  </table>
+
+  <p class="refs-note refs-src">调好之后不用截图，把说明行里那串 <code>#size=…&amp;gap=…&amp;align=…&amp;dx=…&amp;dy=…</code> 发我就行 —— 地址栏里的 hash 一直是当前状态，刷新也不会丢。字体 / 字重 / 字距这些不放出来调：它们按 Claude 规范是定死的一档（display 衬线、400、负字距）。参数出处见 <a href="https://cdn.jsdelivr.net/npm/@hegemonart/get-design-done@1.60.1/reference/composition.md">composition.md</a>。</p>
+</section>
+
+<script>
+const DEFAULTS = { size: 41, gap: 55, align: 'center', dx: 0, dy: -12 };
+const ALIGN_LABEL = { center: '标居中', start: '标左缘', end: '标右缘' };
+
+const stage = document.querySelector('.stage');
+const mark = stage.querySelector('.g-mark');
+const box = stage.querySelector('.fieldbox');
+const search = stage.querySelector('.search');
+const note = document.getElementById('note');
+const darkButton = document.querySelector('.bar button[data-dark]');
+const resetButton = document.querySelector('.bar button[data-reset]');
+const sliders = [...document.querySelectorAll('.bar input[type="range"]')];
+const alignButtons = [...document.querySelectorAll('.bar button[data-align]')];
+const outputs = {
+  size: document.getElementById('o-size'),
+  gap: document.getElementById('o-gap'),
+  dx: document.getElementById('o-dx'),
+  dy: document.getElementById('o-dy'),
+};
+const settingsButton = stage.querySelector('.settings');
+const panel = stage.querySelector('.panel');
+
+const state = { ...DEFAULTS };
+let dark = false;
+const flags = new Set();          // bare / panel 这类只读一次的开关
+
+function syncControls() {
+  sliders.forEach(input => { input.value = state[input.dataset.param]; });
+}
+
+function render() {
+  // 参数是看稿仪器：写成行内样式覆盖样式表里的默认构图。
+  // 值等于默认时就把行内样式清掉 —— 屏幕上看到的仍然是令牌那一档。
+  mark.style.fontSize = state.size === DEFAULTS.size ? '' : `${state.size}px`;
+  box.style.gap = state.gap === DEFAULTS.gap ? '' : `${state.gap}px`;
+  search.style.transform = state.dx ? `translateX(${state.dx}px)` : '';
+  // ⑤ 整组竖直偏移：group 是一个整体，所以平移整个 fieldbox；按视口高的百分比算，换窗口大小也跟着对
+  box.style.transform = state.dy ? `translateY(${((state.dy / 100) * innerHeight).toFixed(1)}px)` : '';
+  stage.dataset.align = state.align;
+
+  outputs.size.textContent = `${state.size}px`;
+  outputs.gap.textContent = `${state.gap}px`;
+  outputs.dx.textContent = `${state.dx}px`;
+  outputs.dy.textContent = `${state.dy}%`;
+  alignButtons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.align === state.align)));
+
+  // 地址栏里始终是当前状态：刷新不丢，也能原样发我
+  const query = new URLSearchParams({
+    size: state.size, gap: state.gap, align: state.align, dx: state.dx, dy: state.dy,
+  });
+  if (dark) query.set('dark', '1');
+  flags.forEach(f => query.set(f, '1'));
+  location.replace(`#${query.toString()}`);
+
+  note.textContent = `字号 ${state.size}px · 间隔 ${state.gap}px · ${ALIGN_LABEL[state.align]} · 线偏移 ${state.dx}px · 整组竖直 ${state.dy}%`
+    + `　—　调好了把这串发我：#${query.toString()}`;
+}
+
+function applyDark(on) {
+  dark = on;
+  if (on) stage.setAttribute('data-theme', 'dark');
+  else stage.removeAttribute('data-theme');
+  darkButton.setAttribute('aria-pressed', String(on));
+}
+
+function togglePanel(open) {
+  panel.toggleAttribute('hidden', !open);
+  settingsButton.setAttribute('aria-expanded', String(open));
+}
+
+sliders.forEach(input => {
+  const key = input.dataset.param;
+  input.addEventListener('input', () => {
+    state[key] = Number(input.value);
+    render();
+  });
+});
+
+alignButtons.forEach(b => b.addEventListener('click', () => {
+  state.align = b.dataset.align;
+  render();
+}));
+
+darkButton.addEventListener('click', () => { applyDark(!dark); render(); });
+
+resetButton.addEventListener('click', () => {
+  Object.assign(state, DEFAULTS);
+  syncControls();
+  render();
+});
+
+settingsButton.addEventListener('click', () => togglePanel(panel.hasAttribute('hidden')));
+document.addEventListener('click', event => {
+  if (panel.hasAttribute('hidden')) return;
+  if (panel.contains(event.target) || settingsButton.contains(event.target)) return;
+  togglePanel(false);
+});
+
+// `d` 切暗色、`b` 收起/放出工具条（方向键留给滑块自己走），不要抢输入框里的按键
+addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea')) return;
+  if (e.key === 'd' || e.key === 'D') { applyDark(!dark); render(); }
+  if (e.key === 'b' || e.key === 'B') {
+    const hidden = document.body.classList.toggle('bare');
+    if (hidden) flags.add('bare'); else flags.delete('bare');
+    render();
+  }
+});
+
+addEventListener('resize', () => {
+  box.style.transform = state.dy ? `translateY(${((state.dy / 100) * innerHeight).toFixed(1)}px)` : '';
+});
+
+// 从 hash 读状态：#size=36&gap=24&align=start&dx=0&dy=-3&dark=1[&panel=1][&bare=1]
+const query = new URLSearchParams(location.hash.slice(1));
+if (query.has('size')) state.size = Number(query.get('size'));
+if (query.has('gap')) state.gap = Number(query.get('gap'));
+if (query.has('align') && ALIGN_LABEL[query.get('align')]) state.align = query.get('align');
+if (query.has('dx')) state.dx = Number(query.get('dx'));
+if (query.has('dy')) state.dy = Number(query.get('dy'));
+if (query.get('dark') === '1') applyDark(true);
+if (query.get('panel') === '1') { flags.add('panel'); togglePanel(true); }
+if (query.get('bare') === '1') { flags.add('bare'); document.body.classList.add('bare'); }
+syncControls();
+render();
+</script>
+</body>
+</html>

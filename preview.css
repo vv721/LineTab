@@ -1,10 +1,23 @@
 /* ============================================================
-   本页只有「布局」和「看稿工具的外壳」两类样式，不含设计取值。
-   设计取值全部来自 tokens.css：改 <html data-style> 换风格、
-   改 data-theme="dark" 换明暗，页面结构一个字都不用动。
+   Preview.html 的看稿外壳 + 三套风格里"令牌表达不了"的组件修正。
+   （风格扩充探索01.html 也引用本文件，它只用到 暖陶 那几条。）
 
-   例外：下面 .bar 是看稿工具自己的外壳（悬浮按钮条），
-   它不属于设计稿，所以不引用语义令牌，只用基础层的灰阶。
+   本页只有两类东西：
+
+   1) 舞台容器与底部的「取值出处」段 —— 不属于设计稿，用基础层的灰阶。
+      用户 m02895 把看稿工具条整条删掉了：换风格走正式页那条路（设置面板里
+      「风格」那一行），所以这页的交互与真页面完全一致，没有"只有看稿页才有"的开关。
+   2) 三套皮肤里"令牌表达不了"的组件差异 —— 搜索框的焦点语汇、引擎小标签的字体、
+      引导语的字体、弹窗输入框的底线……凡是能用令牌表达的都不写在这里：
+      颜色 / 圆角 / 时长 / 阴影 / 字号 / 显示字体全部落成 LineTab/tokens.css 里的语义令牌，
+      所以同一份 LineTab/newtab.css 在 data-style 三种取值下看起来就是三套皮肤。
+      组件本身（引导语与它那 5 个参数、二级菜单、复选引擎、拖动排序、自定义引擎弹窗）
+      三套共用同一份 markup 与同一套规则，差异只许来自令牌 —— 用户 m03467 说的
+      "框架只有一套、风格只是视觉"就是这条纪律。
+
+   舞台本身不在这里画：它直接引用扩展本体的 LineTab/newtab.css，
+   也就是说舞台上看到的就是 LineTab/newtab.html 正在跑的样子。
+   这页因此也是开发进度的同步记录。
    ============================================================ */
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -15,219 +28,611 @@ body {
   color: var(--gray-0);
 }
 
-/* ---------- 看稿工具外壳（不是设计稿的一部分） ---------- */
-.bar {
-  position: fixed;
-  inset: auto 0 16px 0;
-  z-index: 10;
-  display: flex;
-  gap: 8px;
-  justify-content: center;
+/* ---------- 舞台：一屏一套，里面就是真页面 ---------- */
+.stage {
+  display: none;
+  position: relative;   /* 舞台里的 .page 自己有 position: relative，这里是它的容器 */
+  height: 100vh;        /* 定高，好让 .page 的 min-height:100% 有依据 */
 }
 
-/* 看稿时可以彻底藏掉工具条：页面 hash 里带 `+bare` 就会加上这个类，
-   视觉回归测试截图用的就是这种状态（截到的是真实的新标签页，不含工具条）。 */
-.bare .bar { display: none; }
+.stage[data-active] { display: block; }
 
-.bar button {
-  padding: 8px 16px;
-  border: var(--hairline) solid var(--alpha-20);
-  border-radius: var(--r-full);
-  background: var(--gray-900);
-  color: var(--gray-100);
+/* ============================================================
+   三套皮肤里"令牌表达不了"的几行（用户 m03467：框架只有一套、风格只是视觉，
+   所以这一节里的东西三套都生效，只有"这张脸长什么样"按皮肤各写一条）
+   ① 引导语（顶掉"引擎品牌标"那一格）与它那 5 个参数：字号 / 与线的间隔 / 标与线的对齐 /
+      整组竖直位置 / 线偏移。三套共用 markup，取值全部落成 tokens.css 里的令牌
+      （--mark-size / --mark-gap / --mark-dy / --mark-dx）—— 这一组**三套共用**，
+      它是框架的排布，不是风格；"脸"由 --font-display 给。
+      面板最后那 5 行既是"设置项长什么样"的样子，也真的在改这一页（脚本写行内样式，
+      值等于默认值就清掉，所以设计取值仍然只有 tokens.css 一个来源）。
+      尺寸那一组默认值的选择过程见 全局设计.html。
+   ② 皮肤之间的差异只剩"这张脸"与配色：纸白是界面字、点阵走等宽、暖陶是衬线；
+      字重与字距统一 400 + 紧字距（它们会改观感上的"大小"，不算纯视觉）。
+   ③ 引擎标签：标签里写的永远是 `Bing` 这一个句子，纸白/点阵在 CSS 里转全大写
+      （等宽栈的全大写更像原来那个品牌标），暖陶保持句子形 —— 大小写是呈现，不是第二套内容。
+   ④ 暖陶的焦点语汇：规范 components.text-input-focused 是"描边转 primary + 3px 珊瑚 15% 外环"；
+      本页形态是一条底线（用户裁决），所以落成"底线转珊瑚 + 底线下方一道 3px 珊瑚 15%"。
+   ⑤ 间距改成"每个元素自带"：基础层 .fieldbox 那条 12px 的 flex gap 归零，
+      引导语用自己那一条 margin-bottom（--mark-gap）。
+      （真页面 newtab.html 那句提示行 `g 前缀改用 Google 搜索 · / 聚焦` 已按用户 m03467 从本页删掉，
+      所以这里不再有它的定位规则；真页面那边还留着，等同步。）
+   ============================================================ */
+[data-style="clay"] .q { font-family: var(--font-display); }
+
+body[data-serif="off"] [data-style="clay"] .q { font-family: var(--font-ui); }
+
+/* 引导语：字号 / 与线的间隔 / 竖直位置全走令牌，而那一组令牌**三套共用**（它属于框架，不是风格）；
+   风格只决定"这张脸" —— --font-display 纸白是界面字、点阵是等宽、暖陶是衬线。
+   字重与字距也统一取 400 + 紧字距：它们会改观感上的"大小"，与"排布不属于风格"是同一条道理。 */
+[data-style] .mark {
+  margin: 0 0 var(--mark-gap);
+  font-family: var(--font-display);
+  font-size: var(--mark-size);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-tight);
+  line-height: var(--lh-tight);
+  color: var(--text);
+  text-align: center;
+}
+
+body[data-serif="off"] [data-style] .mark { font-family: var(--font-ui); }
+
+/* A3 · 换肤时引导语逐单元交叉淡入（用户 m05145 拍板；拆字规则见 Preview.html 那一段注释）。
+   这一组只管一件事：让"换张脸"不再是硬切。字号 / 字重 / 字距 / 位置全是框架令牌，
+   换肤时唯一变的是 --font-display，于是把文本拆成单元、让两张叠着的脸错峰换，
+   观感就是"字在原地变形"，而不是整块换掉。
+   两个时长由脚本写成行内值：--mk-face = 单个单元的淡入/淡出，--mk-step = 单元之间的错峰。
+   （它们不是皮肤令牌：错峰要按单元数反算，写不进 tokens.css 的静态取值里。） */
+/* 两张脸叠在同一格里（用户 m05277：新脸若绝对定位，宽度就被旧脸的盒子撑着，新字脸更宽
+   时会被挤出 1~2 个字的换行）。用 grid 叠放，格宽自动取更宽的那张脸，谁也不会被挤，
+   盒子高度仍由这一格撑着，--mark-gap 不会塌。 */
+[data-style] .mark { display: grid; justify-items: center; }
+
+/* 两张脸共用一条 opacity 过渡（降级分支也靠它，否则旧脸是瞬变，中间会一个字都看不见） */
+[data-style] .mark .mk-face {
+  grid-area: 1 / 1;
+  user-select: none;
+  transition: opacity var(--mk-face) var(--ease-mid);
+}
+
+/* 每个单元一条 opacity 过渡，延迟按 --i 逐格加：左起第一个先动，末一个最后动 */
+[data-style] .mark .mk-u {
+  display: inline-block;
+  transition: opacity var(--mk-face) var(--ease-mid)
+              calc(var(--i, 0) * var(--mk-step, 0ms));
+}
+
+[data-style] .mark .is-new .mk-u { opacity: 0; }
+[data-style] .mark.is-flying .is-old .mk-u { opacity: 0; }
+[data-style] .mark.is-flying .is-new .mk-u { opacity: 1; }
+
+/* 降级：不拆单元时（连写脚本 / 单元过多 / 时长归零）整张脸一起淡 ——
+   仍然是交叉淡入，只是没有逐字那一拍（过渡在 .mk-face 上共用） */
+[data-style] .mark.is-plain .is-new { opacity: 0; }
+
+[data-style] .mark.is-plain.is-flying .is-old { opacity: 0; }
+[data-style] .mark.is-plain.is-flying .is-new { opacity: 1; }
+
+/* 减少动效：两张脸直接换（时长本来就被归零，这里再明确一次，免得将来把 0s 改掉） */
+@media (prefers-reduced-motion: reduce) {
+  [data-style] .mark .mk-u,
+  [data-style] .mark .mk-face { transition: none; }
+}
+
+/* 整组的竖直位置：三套共用同一个幅度（--mark-dy），换皮肤不该让整组跳位 */
+[data-style] .fieldbox { position: relative; gap: 0; transform: translateY(calc(var(--mark-dy) * 1vh)); }
+
+/* 标的水平对齐：默认走 .fieldbox 的 align-items:center（几何居中） */
+[data-style][data-align="start"] .mark { align-self: flex-start; }
+[data-style][data-align="end"] .mark { align-self: flex-end; }
+
+/* 引擎名这一格三套都是"轮切开关"（用户 m01021）：光标与选区抑制属于行为线索，三套共用 ——
+   user-select:none 是第二道闸，连点这个开关不该在它自己身上拖出一片蓝色选区；
+   不加 hover 变色/底色（延续"除按压变暗外不加 hover"的裁决）。
+   字面大小写是**呈现**、不是内容：标签里写的永远是规范的那句 `Bing`，
+   纸白/点阵在 CSS 里转成全大写（等宽栈的全大写更像原来那个品牌标），暖陶保持句子形。 */
+[data-style] .tag {
+  cursor: pointer;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+[data-style] .tag:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+[data-style="clay"] .tag {
+  font-family: var(--font-ui);
+  font-size: var(--font-md);
+  font-weight: var(--fw-medium);
+  letter-spacing: normal;
+  text-transform: none;   /* 句子形 `Bing`，与等宽全大写那两套只差字面呈现 */
+}
+
+/* 聚焦态与位移（--mark-dx）都是"过渡"而不是硬切：三套共用同一段过渡，
+   只有颜色值来自各自的令牌（用户 m03794：缓和切换属于框架功能，不是暖陶专属）。 */
+[data-style] .search {
+  transition: border-bottom-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+}
+
+[data-style="clay"][data-focus="line"] .search:focus-within {
+  border-bottom-color: var(--coral-500);
+  box-shadow: 0 3px 0 var(--coral-15);
+}
+
+/* ---------- 面板里新增的那 5 行：引导语参数（三套都显示） ---------- */
+/* 一条发丝线，把"真页面本来就有的 5 行设置"与"这轮新加的排版参数"分开 */
+.row-sep {
+  height: var(--hairline);
+  margin: 6px 10px;
+  background: var(--border);
+}
+
+/* 滑块行：形状与面板其它行一致（左标签、右控件），标签用 <label for> 挂着滑块 */
+.rs { display: flex; align-items: center; gap: 10px; }
+
+/* 滑块自己画。原生外观下"已填充 / 未填充"两段轨迹是浏览器按 accent-color 现调的中间色：
+   它不跟皮肤的令牌走，亮暗与换肤时也不会逐色过渡 —— 用户 m03794 第 3 条点出的那一帧跳变
+   就是它（未填充区一帧从上一套的底色变成这一套的底色）。
+   但只把轨迹接管过来还不够：轨迹按百分比摆、滑块头仍由浏览器按它自己的轨道模型摆
+   （Chromium 把头的行程缩到头宽之内，Gecko 不缩），两者会差出小半格 —— 用户 m04538 报的
+   "位置偏移"就是这个。所以头也由这一层画：.sl 是 96×14 的画布，::before 是未填充、
+   ::after 是已填充、.knob 是滑块头，三者的横坐标都由同一个 --slider-frac 算出来
+   （脚本在 input 时写在画布上）。原生滑块头只留一个透明身位，继续负责拖动、键盘与量程。
+   形状是皮肤的事，而且是**两个令牌**：--slider-knob 定头的大小、--slider-r 定圆角
+   （纸白酒丸 12px 圆头 / 点阵读数条 10px 方头），两者都在过渡表里 —— 尺寸与圆角同时
+   插值，形状才是真在变，不会像 9999px 哨兵那样最后一帧才翻过去（用户 m05406）。 */
+.sl {
+  position: relative;
+  display: inline-block;
+  width: 96px;
+  height: 14px;
+  flex: none;
+}
+
+.sl::before,
+.sl::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: var(--slider-r);   /* 轨道的两端与滑块头同一个形状令牌：圆头药丸 / 方头读数条 */
+  pointer-events: none;             /* 装饰层让开指针：命中必须落回铺满画布的原生 input，否则抓头拖不动 */
+}
+
+.sl::before {           /* 未填充：整条轨道 */
+  left: 0;
+  right: 0;
+  background: var(--border-strong);
+}
+
+.sl::after {            /* 已填充：右端正好落在滑块头的中心上 */
+  left: 0;
+  width: calc(var(--slider-knob) / 2 + var(--slider-frac, 0.5) * (100% - var(--slider-knob)));
+  background: var(--slider-fill);
+}
+
+.sl .knob {             /* 滑块头：心的横坐标与上面那条 ::after 的右端是同一个算式 */
+  position: absolute;
+  top: 50%;
+  left: calc(var(--slider-knob) / 2 + var(--slider-frac, 0.5) * (100% - var(--slider-knob)));
+  width: var(--slider-knob);
+  height: var(--slider-knob);
+  margin: calc(var(--slider-knob) / -2) 0 0 calc(var(--slider-knob) / -2);
+  border-radius: var(--slider-r);
+  background: var(--slider-fill);
+  pointer-events: none;             /* 同上：看得见的是它，抓得住的是下面那个 input */
+}
+
+.sl input[type="range"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.sl input[type="range"]::-webkit-slider-runnable-track {
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.sl input[type="range"]::-moz-range-track {
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+/* 原生滑块头留身位不留画面：它还在原地负责命中、拖动与键盘，只是不再画出来 */
+.sl input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 0;
+  background: transparent;
+}
+
+.sl input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  background: transparent;
+}
+
+.sl input[type="range"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+.rs output {
+  min-width: 38px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;  /* 数字等宽，拖动时值不会左右跳 */
+  text-align: right;
+}
+
+/* ---------- 设置卡片：框架定"它是什么"，皮肤定"它长什么样"（用户 m03794 第 4、5 条） ----------
+   三套的几何一致（300px 宽、内边距、行高、那 10 行），差的是表面、形状与读数层级：
+     纸白 = 浮在纸面上的一张白卡：白底（--surface-raised）+ 发丝边 + 一道极轻的投影 + 12px 圆角；
+            滑块是圆头药丸，已填充那段取焦点环那支蓝。
+     点阵 = 印在坐标纸上的一块淡墨：半透明（点子透过它看得见）、无描边、无投影、见方四角；
+            滑块是 2px 见方的读数条、填充取墨色，并且标签让位给读数（标签浅、值深）。
+   投影与描边都写成"颜色透明"而不是 none / 0：颜色可插值，换肤与亮暗才是淡出（第 2 条）。 */
+[data-style] .panel {
+  border-radius: var(--panel-r);
+}
+
+[data-style="grid"] .rl { color: var(--text-3); }
+[data-style="grid"] .rv { color: var(--text); }
+
+/* ---------- 设置里的选项行：真正的二级下拉菜单（三套共用） ----------
+   用户 m05424：选项行原本"是下拉的样子、却是点击轮换"，现在点开是真菜单、点一项即选中。
+   视觉沿用面板本身那一套：--surface-raised 底 + 一发丝线 + --r-md。
+   选中项用右侧 ✓ 表示（用户 m01021 把它改成复选后，勾可以有好几个），键盘走 --ring focus 环。
+
+   分层（m01541 → m02895）：用户说菜单与它所在的面板"颜色基本一致、区分度不够"，五版方案里选了
+   **V3 投影** —— 颜色一格不动，只给菜单加一层投影。浮起程度由 --menu-shadow 一个令牌决定：
+   基础层是三套共用的中性黑那一档（0 8px 24px 12% ＋ 0 1px 3px 8%），暖陶覆写成 --shadow-warm。
+   这两档都是**有意偏离**规范 Elevation「色块优先、阴影罕见」（暖陶规范的阴影只有
+   0 1px 3px rgb(20 20 19 / 8%) 且限定 hover 抬升；项目风格纪律里阴影上限是 0 1px 2px -1px 8%）——
+   用户 m02895 定的方向就是"三套都要靠投影与面板分开"，所以把值与模糊都放大了。
+   深色下同一条令牌换成一档更重的黑（基础层 48% ＋ 32%、暖陶 45% ＋ 30%）：
+   暖墨投影在暖暗底上读不出来，上一版干脆归零、只靠发丝线，按 m02895 的裁决补上。
+   自定义引擎弹窗是同一层（.dlg 也用 --menu-shadow），所以"浮起来的东西"只有一处定义。
+
+   hover：基础层本来就有 --tile-hover（设置按钮与面板行共用它），菜单项沿用同一个令牌；
+   暖陶把它定义成 transparent，所以那一套仍然没有 hover 底色（规范 Don'ts 的既有裁决）。 */
+[data-style] .row { position: relative; }
+
+[data-style] .menu {
+  position: absolute;
+  z-index: 2;              /* 盖住面板里的其它行 */
+  top: 36px;               /* 贴着这一行的下边缘 */
+  right: 0;                /* 与 .row 的右边缘（也就是面板内容区右边缘）对齐 */
+  min-width: 152px;
+  padding: 4px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--menu-shadow);
+}
+
+[data-style] .menu[hidden] { display: none; }
+
+[data-style] .menu-opt {
+  position: relative;      /* 拖动时那道落点线是伪元素，挂在这一条上 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-md);
+  text-align: left;
+  cursor: pointer;
+}
+
+[data-style] .menu-opt:hover { background-color: var(--tile-hover); }
+
+[data-style] .menu-opt:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;    /* 菜单贴着面板边缘，内缩一点免得被裁 */
+}
+
+[data-style] .menu-opt[aria-selected="true"] { color: var(--text); }
+
+[data-style] .menu-check { width: 14px; height: 14px; visibility: hidden; }
+[data-style] .menu-opt[aria-selected="true"] .menu-check { visibility: visible; }
+
+/* 把"自定义…"与上面几个引擎隔开（它开的是弹窗，不是选项本身）。
+   线画在选项自己的上边框上，而不是插一个没有角色的空 div —— listbox 里只允许 option 子元素，
+   插空格子既是非法子元素、又让读屏多念一个空节点。border-box 下不影响高度。
+   认 data-action 而不是 data-value：自定义引擎一旦定义出来，它也有 data-value="custom"，
+   那条线必须只跟着"动作"那一项走。 */
+[data-style] .menu-opt[data-action="custom"] { border-top: var(--hairline) solid var(--border); }
+
+/* 拖动排序的"轻度指引"（用户 m01021：别做得生硬）：
+   平时只有 cursor 这一条线索 —— 不加抓手图标；真拖起来时源行淡下去，
+   落点画一道发丝线（用 --ring，跟键盘焦点环同一支颜色：暖陶是珊瑚、纸白/点阵是蓝）。
+   只认 .menu-engine：能拖的只有"默认搜索引擎"那一张清单，别的菜单给 grab 光标是误导。 */
+[data-style] .menu-engine .menu-opt:not([data-action]) { cursor: grab; }
+[data-style] .menu-engine .menu-opt:not([data-action]):active { cursor: grabbing; }
+[data-style] .menu-opt.is-dragging { opacity: .4; }
+[data-style] .menu-opt.is-drop-before::before,
+[data-style] .menu-opt.is-drop-after::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--hairline);
+  background: var(--ring);
+}
+[data-style] .menu-opt.is-drop-before::before { top: -1px; }
+[data-style] .menu-opt.is-drop-after::after { bottom: -1px; }
+
+/* ---------- 自定义搜索引擎弹窗（三套共用） ----------
+   遮罩走 --scrim 令牌（样式里不准写裸 rgb()）：纸白/点阵是中性压暗、暖陶是暖墨 40%。
+   卡片仍是"色块 + 发丝线"，但按用户 m02895「三套都要靠投影与面板分开」，
+   它和菜单共用同一层 —— box-shadow: var(--menu-shadow)。
+   两个输入沿用"一条底线"（用户早前否决了规范里那个 8px 圆角有框输入）；
+   聚焦语汇与各自的搜索线同构：暖陶转珊瑚 + 一道外环，纸白/点阵转主文字色。 */
+[data-style] .dlg-back {
+  position: fixed;
+  inset: 0;
+  z-index: 3;              /* 盖在菜单与面板之上 */
+  display: grid;
+  place-items: center;
+  background: var(--scrim);
+}
+
+[data-style] .dlg-back[hidden] { display: none; }
+
+[data-style] .dlg {
+  width: 320px;
+  padding: 16px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--menu-shadow);
+}
+
+[data-style] .dlg-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: var(--font-lg);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-tight);
+  color: var(--text);
+}
+
+/* 暖陶的标题是衬线 400（规范 display 那一档），纸白/点阵用界面字的 600 */
+[data-style="clay"] .dlg-title { font-weight: var(--fw-regular); }
+
+[data-style] .dlg-field { display: block; margin-bottom: 14px; }
+
+[data-style] .dlg-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-2);
+  font-size: var(--font-sm);
+}
+
+[data-style] .dlg-input {
+  width: 100%;
+  padding: 6px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  font: inherit;
+  font-size: var(--font-md);
+  color: var(--text);
+}
+
+[data-style] .dlg-input::placeholder { color: var(--text-3); }
+
+[data-style] .dlg-input:focus {
+  outline: none;
+  border-bottom-color: var(--text);
+}
+
+/* 暖陶的聚焦语汇更重一档：底线转珊瑚 + 下方一道 2px 珊瑚 15%（与它的搜索线同一条） */
+[data-style="clay"] .dlg-input:focus {
+  border-bottom-color: var(--coral-500);
+  box-shadow: 0 2px 0 var(--coral-15);
+}
+
+[data-style] .dlg-note {
+  margin: 0 0 16px;
+  color: var(--text-3);
+  font-size: var(--font-sm);
+  line-height: var(--lh-normal);
+}
+
+[data-style] .dlg-note code { font-family: var(--font-mono); color: var(--text-2); }
+
+[data-style] .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+[data-style] .dlg-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
   font: inherit;
   font-size: var(--font-md);
   cursor: pointer;
 }
 
-.bar button[aria-pressed="true"] {
-  background: var(--gray-75);
-  border-color: var(--gray-75);
-  color: var(--gray-1000);
-}
+[data-style] .dlg-btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
-.bar .sep { width: var(--hairline); margin: 4px 4px; background: var(--alpha-20); }
-
-/* ---------- 舞台 ---------- */
-.stage {
-  display: none;
-  position: relative;      /* 让设置按钮与面板锚在页面右下角 */
-  min-height: 100%;        /* 用 min-height 而不是 height：矮视口下内容才不会被裁掉 */
-  padding: 56px 64px;
-  background: var(--bg);
-  color: var(--text);
-}
-
-.stage[data-active] { display: block; }
-
-/* C 点阵的底纹（--dot / --dot-size 只有 C 和暗色下才有值） */
-.stage[data-style="grid"] {
-  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-  background-size: var(--dot-size) var(--dot-size);
-}
-
-.head { display: flex; flex-direction: column; gap: 2px; }
-
-.clock {
-  font-size: var(--font-clock);
-  font-weight: var(--fw-regular);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-tight);
-}
-
-.date { font-size: var(--font-md); color: var(--text-2); }
-
-.middle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 48px;
-  margin-top: 18vh;
-}
-
-/* ---------- 搜索框：唯一视觉重心 ---------- */
-.search {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 640px;
-  max-width: 100%;
-  min-height: 56px;
-  padding: 0 20px;
-  background: var(--search-bg);
-  border: var(--search-border);
-  border-radius: var(--search-radius);
-  box-shadow: var(--search-shadow);
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
-}
-
-.search:focus-within { border-color: var(--ring); }
-
-.search svg { flex: none; width: 18px; height: 18px; color: var(--text-3); }
-
-.search .ph { flex: 1; font-size: var(--font-lg); color: var(--text-3); }
-
-.search .key {
-  flex: none;
-  padding: 2px 6px;
-  border: var(--hairline) solid var(--border);
-  border-radius: var(--r-sm);
-  font-size: var(--font-sm);
-  color: var(--text-3);
-}
-
-/* ---------- 宫格 ---------- */
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(5, 88px);
-  gap: 8px 0;
-  justify-content: center;
-}
-
-.tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 0;
-  border-radius: var(--r-md);
-  text-decoration: none;
-  color: inherit;
-  transition: background var(--dur) var(--ease);
-}
-
-.tile:hover { background: var(--tile-hover); }
-
-.fav {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  border: var(--tile-border);
-  font-size: var(--font-lg);
-  font-weight: var(--fw-medium);
-  color: var(--text-2);
-}
-
-.name { font-size: var(--font-sm); color: var(--text-3); }
-
-/* ---------- 设置按钮（右下角，32×32，安静到几乎看不见） ---------- */
-.settings {
-  position: absolute;
-  right: 32px;
-  bottom: 32px;
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--text-3);
-  cursor: pointer;
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-
-.settings:hover { background: var(--tile-hover); color: var(--text-2); }
-.settings:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-.settings svg { width: 18px; height: 18px; }
-.settings[aria-expanded="true"] { background: var(--tile-hover); color: var(--text-2); }
-
-/* ---------- 设置面板（浮起层：菜单圆角 12 + 发丝线 + 极轻阴影） ---------- */
-.panel {
-  position: absolute;
-  right: 32px;
-  bottom: 76px;
-  width: 300px;
-  padding: 6px;
-  background: var(--panel-bg);
-  border: var(--panel-border);
-  border-radius: var(--r-md);
-  box-shadow: var(--panel-shadow);
-}
-
-.panel[hidden] { display: none; }
-
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  height: 36px;
-  padding: 0 10px;
-  border-radius: var(--r-sm);
-  font-size: var(--font-md);
-  transition: background var(--dur) var(--ease);
-}
-
-.row:hover { background: var(--tile-hover); }
-
-.rl { color: var(--text); }
-.rv { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
-.chev { width: 14px; height: 14px; }
-
-/* 开关做成方框勾选，不用胶囊——「圆角只有 4/12/24 三档、禁胶囊」是硬纪律 */
-.check {
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  flex: none;
-  border: var(--hairline) solid var(--border-strong);
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
-}
-
-.check svg { width: 12px; height: 12px; opacity: 0; transition: opacity var(--dur) var(--ease); }
-
-.check[aria-checked="true"] {
+/* 主按钮用主文字色反填充（--text 底 + --bg 字）：任何风格下都是这套配色里最强的一对，
+   而且两个主题里都成立 —— 所以原来那句"暗色下主按钮要反过来"可以整条删掉。
+   暖陶上它正好等于 --warm-ink 底 + --cream-50 字（珊瑚只留给聚焦那一下，不再多一处彩色）。 */
+[data-style] .dlg-btn-primary {
   background: var(--text);
   border-color: var(--text);
   color: var(--bg);
 }
 
-.check[aria-checked="true"] svg { opacity: 1; }
+[data-style] .dlg-btn-primary:disabled {
+  background: var(--border);
+  border-color: var(--border);
+  color: var(--text-3);
+  cursor: default;
+}
+
+/* ---------- 亮暗切换与换肤的过场：D1 逐色渐变（用户 m00768 选定，m03794 起三套统一） ----------
+   亮暗切换是 UI 功能、不是风格差异，所以这一节对三套都生效（规则一律 [data-style]）；
+   皮肤之间互相切换也走同一条过渡 —— 前提是"换肤时要变的那几个令牌"都在下面注册过。
+   注意：注册与 transition 都必须写在**变化之后生效的那条规则**上，写进被切走的那条不管用。
+
+   亮底黑字换暗底白字时，墨迹的灰度与底色的灰度必然在某一刻相等 —— 那一刻字是看不见的，
+   这是插值的几何必然，绕不开。D1 的处理是"让这一刻一闪而过"：把语义色注册成可插值的
+   <color>，再让它们用同一个时长、同一条曲线一起走。--ease-mid 是中心对称的，斜率最大值
+   正好落在半程，两色在同一灰度上相遇的那一两帧因此被压到最短（实测 420ms 全程只糊 ~56ms）。
+   材质与墨迹必须同一条曲线：早前让材质先跑、墨迹延迟 30% 跟上，实测出 139ms（1/3 时长）的
+   "底已经黑了、字还黑着" —— 那是错的，别改回去。时长只有一个来源：--dur-theme。
+   真页面要落 D1 的话把这一段搬进 LineTab/ 即可，但注意 @property 是全局注册，
+   这里只注册在看稿页，扩展本身一行没动。 */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface-2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --surface-raised { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --tile-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --border { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --border-strong { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text-2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --text-3 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --ring { syntax: '<color>'; inherits: true; initial-value: transparent; }
+/* 这几件是 m03794 补上的"换肤时会变的形状与表面"：
+   --panel-bg / --panel-shadow-color 让设置卡片在皮肤之间淡出（m03794 第 2 条）；
+   --scrim 让弹窗遮罩跟着走；--slider-fill 是滑块已填充那段与圆点的颜色，
+   不注册的话它会和 --ring 一起被原生控件提前算成另一种颜色（m03794 第 3 条）。 */
+@property --panel-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --panel-shadow-color { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --scrim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --slider-fill { syntax: '<color>'; inherits: true; initial-value: transparent; }
+/* 形状也要一起化，否则"任意风格互切"在几何上仍是硬切（`/review` 抓到的）：
+   --panel-r 在纸白是 12px、点阵是 4px；--slider-knob 是头的大小（10px ↔ 8px）、
+   --slider-r 是头的圆角（5px 圆头 ↔ 2px 方头，**不写 9999px 哨兵** —— 见 tokens.css）。
+   未注册的 <length> 是离散值 —— 实测切回去后第 38ms 圆角就已经是终值，
+   而同一时刻 --panel-bg 才走到一半。注册成 <length> 后由消费方 border-radius / width 逐帧重算。 */
+@property --panel-r { syntax: '<length>'; inherits: true; initial-value: 12px; }
+@property --slider-knob { syntax: '<length>'; inherits: true; initial-value: 10px; }
+@property --slider-r { syntax: '<length>'; inherits: true; initial-value: 5px; }
+
+/* 故意不注册 --dot：点阵的圆点在 background-image 里，图像不能插值 ——
+   它随皮肤一帧换掉，但页面底色本身在过渡，所以那一下就落在一条灰色的底上。 */
+[data-style] {
+  transition:
+    --bg var(--dur-theme) var(--ease-mid),
+    --surface var(--dur-theme) var(--ease-mid),
+    --surface-2 var(--dur-theme) var(--ease-mid),
+    --surface-raised var(--dur-theme) var(--ease-mid),
+    --panel-bg var(--dur-theme) var(--ease-mid),
+    --panel-shadow-color var(--dur-theme) var(--ease-mid),
+    --scrim var(--dur-theme) var(--ease-mid),
+    --slider-fill var(--dur-theme) var(--ease-mid),
+    --tile-hover var(--dur-theme) var(--ease-mid),
+    --border var(--dur-theme) var(--ease-mid),
+    --border-strong var(--dur-theme) var(--ease-mid),
+    --text var(--dur-theme) var(--ease-mid),
+    --text-2 var(--dur-theme) var(--ease-mid),
+    --text-3 var(--dur-theme) var(--ease-mid),
+    --ring var(--dur-theme) var(--ease-mid),
+    --panel-r var(--dur-theme) var(--ease-mid),
+    --slider-knob var(--dur-theme) var(--ease-mid),
+    --slider-r var(--dur-theme) var(--ease-mid);
+}
+
+/* 首屏（含按 hash 播种的那一次）瞬时落位：脚本在第一个 rAF 之后就摘掉这个属性。
+   只看 CSS 也得说得通：没有它的话，页面上是纸白、hash 写 clay 时会看到一次多余的淡入。 */
+[data-booting] { --dur-theme: 0s; }
+
+/* 尊重"减少动态效果"：只把时长归零，过场退化成直接切换（和真页面现在的行为一致） */
+@media (prefers-reduced-motion: reduce) {
+  [data-style] { --dur-theme: 0s; }
+}
+
+/* ---------- 取值出处：属于看稿工具，所以只用基础层灰阶 ---------- */
+.refs {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+  font-family: var(--font-ui);
+  color: var(--gray-150);
+}
+
+.refs-title {
+  margin: 0 0 8px;
+  font-size: var(--font-lg);
+  font-weight: var(--fw-medium);
+  color: var(--gray-0);
+}
+
+.refs-note {
+  margin: 0 0 20px;
+  font-size: var(--font-md);
+  color: var(--gray-300);
+}
+
+.swatches { display: flex; gap: 12px; margin-bottom: 8px; }
+
+.swatch {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 88px;
+  padding: 10px 12px;
+  border: var(--hairline) solid var(--alpha-20);
+  border-radius: var(--r-sm);
+  font-size: var(--font-sm);
+}
+
+.swatch-paper { background: var(--gray-50); color: var(--gray-700); }
+.swatch-grid { background: var(--paper-warm); color: var(--gray-700); }
+.swatch-clay { background: var(--cream-50); color: var(--gray-700); }
+
+.sw-name { font-weight: var(--fw-medium); }
+.sw-token { font-family: var(--font-mono); }
+
+.refs-table {
+  width: 100%;
+  margin-top: 24px;
+  border-collapse: collapse;
+  font-size: var(--font-md);
+}
+
+.refs-table th,
+.refs-table td {
+  padding: 8px 10px;
+  border-bottom: var(--hairline) solid var(--alpha-15);
+  text-align: left;
+  vertical-align: top;
+}
+
+.refs-table th { color: var(--gray-0); font-weight: var(--fw-medium); }
+.refs-table td { color: var(--gray-200); }
+.refs-table td:nth-child(2) { font-family: var(--font-mono); color: var(--gray-300); }
+.refs-deviate td { color: var(--gray-400); }

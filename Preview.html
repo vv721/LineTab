@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新标签页 · Preview（纸白 / 点阵 / 暖陶）</title>
+
+<!-- 取值只有一个来源：扩展本体里的 LineTab/tokens.css。
+      这一幅舞台还直接引用扩展本体的 LineTab/newtab.css，所以舞台上看到的就是
+      D:\桌面\dsh\newtab-extension\LineTab\newtab.html 正在跑的样子（无时钟、无快捷方式宫格、
+      搜索是一条底线、面板 5 行），三套之间只差 tokens.css 里的皮肤令牌。
+      这页因此也是"开发进度"的同步记录：真页面改了形态，这里跟着改。
+      用户 m03467 定的口径：**框架只有一套，三个风格是同一套框架的三张皮肤** ——
+      结构、交互、排布（引导语、面板那 10 行、二级菜单、弹窗、拖动排序）三套逐字相同，
+      皮肤能改的只有颜色 / 字体 / 投影 / 时长这些"看起来怎样"的令牌。
+      所以换皮肤走设置面板里的「风格」那一行（页面里没有看稿工具条）、默认是纸白，
+      而且换皮肤时引导语的位置与那 5 个滑块的读数都不动。
+      比真页面多的两样（都是框架的一部分，三套共用同一组取值）：
+        · 引导语 `.mark`（"Type something"）：顶的是原本该放引擎品牌标的那一格，与搜索框成上下关系；
+        · 设置面板最后那 5 行"引导语参数"（字号 / 与线的间隔 / 标对齐 / 整组竖直 / 线偏移）。
+      真页面那句提示行（`g 前缀改用 Google 搜索 · / 聚焦`）按用户 m03467 从本页删掉了。
+      暖陶目前还不在真页面的 STYLES 里 —— 它的令牌在 tokens.css 的 §4【临时】，你点头后才搬进正式区。 -->
+<link rel="stylesheet" href="LineTab/tokens.css">
+<link rel="stylesheet" href="LineTab/newtab.css">
+
+<link rel="stylesheet" href="preview.css">
+</head>
+<body>
+
+<!-- ===== 舞台：三套皮肤共用同一套结构、交互与排布 =====
+     这页是 LineTab/newtab.html 的镜像预览：结构、组件、交互逻辑都与正式页一致，
+     换皮肤就是换这里的 data-style —— 颜色 / 字体 / 投影 / 时长全部由 LineTab/tokens.css 决定。
+     换皮肤的动作也走正式页的路：设置面板里「风格」那一行（用户 m02895 拿掉了看稿工具条），
+     默认是纸白。
+     正式页已经有的：搜索线（放大镜 + 输入框 + 引擎小标签）、设置按钮、面板里那 5 行设置、
+     自定义搜索引擎弹窗；引导语 `.mark` 与面板最后 5 行排版参数是本轮从暖陶的探索里
+     并进框架的（用户 m03467）：三套共用同一组取值，换皮肤时位置与滑块读数都不动。
+     与真页面只有一处差异：去掉了 id（一页一份，表单元素仍用 aria-label 命名）。 -->
+<section class="stage" data-style="paper" data-focus="line" data-lead="icon" data-active>
+  <main class="page">
+    <div class="fieldbox">
+      <!-- 引导语：框架的一部分（三套共用同一组字号 / 间隔 / 位置，见 tokens.css 的 --mark-*），
+           皮肤只决定这张脸（--font-display：界面字 / 等宽 / 衬线）。
+           它顶的是原本放引擎品牌标的那一格，与搜索框成上下关系。 -->
+      <p class="mark" aria-hidden="true">Type something</p>
+      <form class="search" role="search">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="M16 16l4.5 4.5"></path>
+        </svg>
+        <span class="prompt" aria-hidden="true">&gt;</span>
+        <!-- 输入框里不放占位文案（用户 m01021 第 1 条：引导语已经说了该说什么，
+             框里再写一遍是重复；这条属于框架，三套一致），可访问名留在 aria-label 上。 -->
+        <input class="q" type="text" autocomplete="off" spellcheck="false"
+               aria-label="搜索">
+        <!-- 引擎名这一格是快捷切换的开关（用户 m01021）：点它 = 走到下一个复选着的引擎。
+             仍是 <span>（不是 <button>）—— button 在这个 <form> 里会触发提交。
+             标签里写的是内容（句子形 `Bing`），大写在 preview.css 里按皮肤给
+             （纸白/点阵 uppercase，暖陶 none）。 -->
+        <span class="tag" role="button" tabindex="0">Bing</span>
+      </form>
+    </div>
+
+    <button class="settings" type="button" aria-label="设置" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 8h9M19 8h1M4 16h3M13 16h7"></path>
+        <circle cx="15.5" cy="8" r="2"></circle>
+        <circle cx="9.5" cy="16" r="2"></circle>
+      </svg>
+    </button>
+
+    <div class="panel" role="dialog" aria-label="设置" hidden>
+      <div class="row">
+        <span class="rl">默认搜索引擎</span>
+        <button class="rv" type="button" aria-label="默认搜索引擎">
+          <span>Bing</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">搜索框左侧</span>
+        <button class="rv" type="button" aria-label="搜索框左侧">
+          <span>放大镜</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">焦点反馈</span>
+        <button class="rv" type="button" aria-label="焦点反馈">
+          <span>深灰细线</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">暗色</span>
+        <button class="rv" type="button" aria-label="暗色">
+          <span>跟随系统</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="row">
+        <span class="rl">风格</span>
+        <button class="rv" type="button" aria-label="风格">
+          <span>纸白</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 下面 5 行是暖陶探索出来的「引导语参数」，纸白/点阵不显示（只差一条 data-style 的规则）。
+           默认值就是用户挑定的那一组：41px / 55px / 居中 / 上移 12% / 线不偏移
+           （挑的过程见 全局设计.html 那张同轴的工具条，范围更大）。
+           这 5 行都是版式控件，所以「引导语对齐」也用滑块（用户 m00768：统一观感）——
+           三档按空间顺序排：左缘 / 居中 / 右缘，往右拖就是往右靠，默认档在正中间。
+           拖动即时生效、不落盘 —— 真页面定案之后再谈 chrome.storage 的持久化。 -->
+      <div class="row-sep"></div>
+      <div class="row row-param">
+        <label class="rl" for="mark-size">引导语字号</label>
+        <span class="rs">
+          <input id="mark-size" type="range" min="20" max="64" step="1" value="41" data-param="size">
+          <output for="mark-size">41px</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-gap">与线的间隔</label>
+        <span class="rs">
+          <input id="mark-gap" type="range" min="0" max="72" step="1" value="55" data-param="gap">
+          <output for="mark-gap">55px</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-align">引导语对齐</label>
+        <span class="rs">
+          <input id="mark-align" type="range" min="0" max="2" step="1" value="1" data-param="align">
+          <output for="mark-align">居中</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-dy">整组竖直</label>
+        <span class="rs">
+          <input id="mark-dy" type="range" min="-40" max="40" step="1" value="-12" data-param="dy">
+          <output for="mark-dy">-12%</output>
+        </span>
+      </div>
+      <div class="row row-param">
+        <label class="rl" for="mark-dx">搜索线偏移</label>
+        <span class="rs">
+          <input id="mark-dx" type="range" min="-120" max="120" step="1" value="0" data-param="dx">
+          <output for="mark-dx">0px</output>
+        </span>
+      </div>
+    </div>
+  </main>
+
+  <!-- 自定义搜索引擎弹窗：三套共用。只做前端 —— 保存会把它加成一条真引擎、并设为当前引擎，
+       不落盘、也不接真页面的 chrome.storage。遮罩点一下关、Esc 关一层；
+       保存按钮在"名称非空且地址里含 %s"之前一直是 disabled。 -->
+  <div class="dlg-back" data-dlg hidden>
+    <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+      <h2 class="dlg-title" id="dlg-title">自定义搜索引擎</h2>
+      <label class="dlg-field">
+        <span class="dlg-label">名称</span>
+        <input class="dlg-input" type="text" data-dlg-name autocomplete="off" spellcheck="false"
+               placeholder="例如 知乎" aria-label="搜索引擎名称">
+      </label>
+      <label class="dlg-field">
+        <span class="dlg-label">搜索地址</span>
+        <input class="dlg-input" type="text" data-dlg-url autocomplete="off" spellcheck="false"
+               placeholder="https://example.com/search?q=%s" aria-label="搜索地址">
+      </label>
+      <p class="dlg-note">用 <code>%s</code> 占位查询词 —— 你输入什么，就把什么发过去。</p>
+      <div class="dlg-actions">
+        <button class="dlg-btn" type="button" data-dlg-cancel>取消</button>
+        <button class="dlg-btn dlg-btn-primary" type="button" data-dlg-save disabled>保存</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 取值出处（不在舞台里，截图与 +bare 都不会带它出来） =====
+     AGENTS.md 第 8 节要求"设计取值要能指回规范里的具体条目"，这两张表就是那份收据：
+     第一张是"同一件东西在三套里各取哪个值"（组件级对照），
+     第二张是暖陶的逐条出处（它的规范是 DesignReference/DESIGN-claude.md）。
+     末尾四条是按用户裁决有意保留的偏离，不是漏做。 -->
+<section class="refs">
+  <h2 class="refs-title">三套风格 · 取值对照（同一个组件，三套各取哪个令牌）</h2>
+  <p class="refs-note">舞台上那一个 <code>data-style</code> 换掉，颜色 / 圆角 / 字体 / 阴影 / 时长就全部跟着换。组件本身 —— 搜索线、设置按钮与面板、二级下拉菜单、引擎复选与拖动排序、自定义搜索引擎弹窗 —— 三套共用同一套结构与规则，差异只许来自 <code>LineTab/tokens.css</code> 里的令牌。</p>
+
+  <div class="swatches">
+    <div class="swatch swatch-paper"><span class="sw-name">纸白</span><span class="sw-token">--gray-50</span></div>
+    <div class="swatch swatch-grid"><span class="sw-name">点阵</span><span class="sw-token">--paper-warm</span></div>
+    <div class="swatch swatch-clay"><span class="sw-name">暖陶</span><span class="sw-token">--cream-50</span></div>
+  </div>
+  <p class="refs-note">三个底色并排。暖陶与纸白只差一点暖度 —— 这是这套风格最容易"看着像换了个色号"的地方，先看这里。</p>
+
+  <table class="refs-table">
+    <thead><tr><th>用在哪</th><th>纸白</th><th>点阵</th><th>暖陶</th></tr></thead>
+    <tbody>
+      <tr><td>页面底色</td><td>--gray-50</td><td>--paper-warm + 1px 暖墨点（--dot / --dot-size 18px）</td><td>--cream-50</td></tr>
+      <tr><td>浮起层（面板 / 菜单 / 弹窗共用）</td><td>--surface-raised（= --surface，白）</td><td>--surface-raised（= --gray-0；点阵底上必须不透明）</td><td>--surface-raised（= --cream-200 #efe9de）</td></tr>
+      <tr><td>面板那层的描边与阴影</td><td colspan="2">1px --border ＋ --panel-shadow = --shadow-1</td><td>1px --border；--panel-shadow: none（色块优先、阴影罕见）</td></tr>
+      <tr><td>菜单与弹窗那层的投影</td><td colspan="2">--menu-shadow = 0 8px 24px rgb(0 0 0 / 12%) ＋ 0 1px 3px rgb(0 0 0 / 8%)；暗色 48% ＋ 32%</td><td>--menu-shadow = --shadow-warm（暖墨 14% ＋ 8%）；暗色 45% ＋ 30%</td></tr>
+      <tr><td>弹窗遮罩</td><td colspan="2">--scrim = rgb(13 13 13 / 40%)，暗色 rgb(0 0 0 / 55%)</td><td>--scrim = --warm-scrim（暖墨 40%）</td></tr>
+      <tr><td>搜索线</td><td colspan="2">1px --border-strong；聚焦（line）转 --text，hold 时不动</td><td>1px --hairline-warm；聚焦转 --coral-500 ＋ 0 3px 0 --coral-15</td></tr>
+      <tr><td>键盘焦点环</td><td colspan="2">--ring = --blue-500（暗色 --blue-400）</td><td>--ring = --coral-500</td></tr>
+      <tr><td>引擎小标签</td><td colspan="2">等宽、--font-sm、--ls-wide，text-transform 转全大写</td><td>--font-ui、--font-md、--fw-medium，句子形（text-transform: none）</td></tr>
+      <tr><td>显示体（大标题那一档脸）</td><td>--font-display = --font-ui</td><td>--font-display = --font-mono</td><td>--font-display = --font-serif</td></tr>
+      <tr><td>显示体的字重 / 字距</td><td colspan="3">三套共用：--fw-regular 400 ＋ --ls-tight（它们会改观感上的"大小"，与排布同属框架）</td></tr>
+      <tr><td>引导语字号 / 与线的间隔</td><td colspan="3">三套共用：--mark-size（= --font-mark 41px）/ --mark-gap 55px</td></tr>
+      <tr><td>整组竖直位置 / 线的偏移</td><td colspan="3">三套共用：--mark-dy −12（vh）/ --mark-dx 0（px）</td></tr>
+      <tr><td>引导语与那 5 个参数</td><td colspan="3">三套一套（用户 m03467：框架只有一套，皮肤只管视觉）；取值同上一行，换皮肤不重算</td></tr>
+      <tr><td>亮暗切换</td><td colspan="2">一帧换完（与正式页现状一致）</td><td>D1 逐色渐变：--dur-theme 420ms ＋ --ease-mid（m00768）</td></tr>
+      <tr><td>hover 底色</td><td>--tile-hover = --alpha-05</td><td>--tile-hover = --alpha-08</td><td>--tile-hover = transparent（Don'ts：不加 hover）</td></tr>
+    </tbody>
+  </table>
+  <p class="refs-note">上表里的圆角一律走本项目那三档（--r-sm 4 / --r-md 12 / --r-lg 24），动效一律走 --dur 150ms（亮暗过场另有 --dur-theme）。</p>
+
+  <table class="refs-table">
+    <thead><tr><th>暖陶用在哪</th><th>令牌</th><th>规范条目</th></tr></thead>
+    <tbody>
+      <tr><td>页面底色</td><td>--cream-50</td><td>colors.canvas（#faf9f5，规范说纯白会"像任何一个 AI 工具"）</td></tr>
+      <tr><td>浮起层 / 面板底</td><td>--cream-200</td><td>colors.surface-card、components.feature-card（#efe9de）</td></tr>
+      <tr><td>主文字</td><td>--warm-ink</td><td>colors.ink（#141413）</td></tr>
+      <tr><td>次级 / 三级文字</td><td>--warm-muted / --warm-muted-soft</td><td>colors.muted、colors.muted-soft</td></tr>
+      <tr><td>发丝线（搜索底线、面板描边）</td><td>--hairline-warm</td><td>colors.hairline（#e6dfd8，规范里与 primary-disabled 同值）</td></tr>
+      <tr><td>唯一的彩色：聚焦时的底线</td><td>--coral-500</td><td>colors.primary + components.text-input-focused（描边转 primary）</td></tr>
+      <tr><td>聚焦时底线下方那一道</td><td>--coral-15</td><td>components.text-input-focused「3px coral-at-15%-alpha outer ring」</td></tr>
+      <tr><td>暗色底 / 浮起</td><td>--dark-warm / --dark-warm-raised</td><td>colors.surface-dark、surface-dark-elevated（#181715 / #252320）</td></tr>
+      <tr><td>暗色文字</td><td>--on-dark-warm / --on-dark-warm-soft</td><td>colors.on-dark、on-dark-soft（规范只给这两档）</td></tr>
+      <tr><td>显示体 / 衬线</td><td>--font-serif（--font-display 指到它）</td><td>typography 的 display 系列 + Note on Font Substitutes（系统近似）</td></tr>
+      <tr><td>不加阴影 / 不加 hover</td><td>--panel-shadow: none / --tile-hover: transparent</td><td>Elevation「色块优先、阴影罕见」；Don'ts「除按压变暗外不加 hover」</td></tr>
+      <tr><td>菜单的那一层投影</td><td>--menu-shadow = --shadow-warm</td><td><b>有意偏离</b>：规范那条阴影是 0 1px 3px rgb(20 20 19 / 8%) 且限定 hover 抬升，这里要的是"菜单一直浮在面板上"（细节体验台 06 节 V3）。用户 m02895 定的方向是<b>三套都放大投影</b>，纸白 / 点阵用中性黑的那一档</td></tr>
+      <tr><td>弹窗遮罩</td><td>--warm-scrim（rgb(20 20 19 / 40%)）</td><td>规范没有遮罩条目；暖墨 40% 取自 colors.ink 同色系，浅底与暖暗底上都读得出"压暗一层"</td></tr>
+      <tr><td>引导语（顶掉引擎品牌标那一格）</td><td>Type something</td><td>m03219 / m04869：原本该放引擎图标的位置改成引导语，与搜索框成上下关系；用户 m03467 定为框架的一部分、三套共用</td></tr>
+      <tr><td>引导语字号</td><td>--font-mark（41px）</td><td>用户从可调参数里挑定的默认，落在规范 display 刻度 36 / 48 之间；三套共用这一个值</td></tr>
+      <tr><td>引导语与线的间隔</td><td>55px</td><td>用户挑定；composition.md 的"孤立 / 平衡"—— 标与线要读成一个整体</td></tr>
+      <tr><td>整组竖直位置</td><td>上移 12vh</td><td>用户挑定；居中构图可覆盖三分法，但重心要比几何中心略高</td></tr>
+      <tr><td>这 5 个参数也是设置项</td><td>面板最后那 5 行</td><td>三套共用同一组默认值（41 / 55 / 居中 / −12% / 0）—— 用户 m03467：控件的排布与控制不属于皮肤，换皮肤时滑块与行内样式都不动</td></tr>
+      <tr><td>提示行（m03467 删）</td><td>—</td><td>正式页 newtab.html:29 那句 `g 前缀改用 Google 搜索 · / 聚焦` 不符合设计，用户要求删掉；本页已无这个元素（真页面那边等同步）</td></tr>
+      <tr class="refs-deviate"><td>偏离①形态</td><td>仍是一条底线</td><td>未采纳 components.text-input 的 8px 圆角有框输入（你裁决的）</td></tr>
+      <tr class="refs-deviate"><td>偏离②圆角</td><td>4 / 12 / 24</td><td>未采纳 rounded.md 8px（项目既有纪律只有三档）</td></tr>
+      <tr class="refs-deviate"><td>偏离③字体</td><td>--font-serif（系统栈）</td><td>不是 Copernicus，也拿不到 Cormorant Garamond（零网络请求）</td></tr>
+      <tr class="refs-deviate"><td>偏离④暗色三级文字</td><td>与二级同值</td><td>规范只给 on-dark / on-dark-soft 两档，暗色下三级信息并入第二档</td></tr>
+    </tbody>
+  </table>
+</section>
+
+
+<script>
+const stage = document.querySelector('.stage');
+
+let dark = false;
+let serif = true;
+
+/* 换皮肤 = 换舞台这一个 data-style：颜色 / 圆角 / 字体 / 阴影 / 投影全部由 tokens.css 决定。
+   脚本里没有"按皮肤改内容"的补丁 —— 引擎名的大小写也只是 preview.css 的 text-transform
+   （内容永远是 markup 里那一句 `Bing`），输入框不放占位文案（用户 m01021 / m03467）。
+   用户 m05145：换肤时唯一还会"跳"的地方是引导语那张脸（只换 --font-display），
+   所以从这里挂一次 A3 的逐单元交叉淡入；世界（背景/面板/滑块/点阵/投影）仍归 CSS 那 17 条过渡。 */
+function show(name) {
+  // 面板里「风格」那一行是唯一的切换入口（用户 m02895 拿掉了看稿工具条）：
+  // 菜单里选中一项、hash 还原、以及文件末尾的初始状态，都汇聚到这里，
+  // 所以那一行的值永远等于舞台上真正在穿的这套皮肤。
+  setMenuValue('style', name);
+  if (name === stage.dataset.style) return;   // 同一套皮肤：不动 DOM，也不动过场
+  // 首屏不许有过场（那一段 --dur-theme 是 0s），也就不必拆字
+  const play = stage.hasAttribute('data-booting') ? null : beginFaceSwitch();
+  stage.dataset.style = name;                 // ← 世界开始过渡（preview.css 那 17 条）
+  if (play) play();                           // ← 同一帧里两张脸开始错峰换
+}
+
+/* on 只决定明暗；rowValue 是面板那一行该显示成哪一档（不传就不动那一行）。
+   初始状态不传 rowValue，让那一行保持默认的「跟随系统」。 */
+function applyDark(on, rowValue) {
+  dark = on;
+  if (on) stage.setAttribute('data-theme', 'dark');
+  else stage.removeAttribute('data-theme');
+  if (rowValue) setMenuValue('dark', rowValue);
+}
+
+/* 衬线开关：只对暖陶有意义（规范要求 display 走衬线），默认开着。
+   页面里没有这个设置项（正式页也没有），只留给 hash 的 `+noserif` 做对照。 */
+function applySerif(on) {
+  serif = on;
+  document.body.dataset.serif = on ? 'on' : 'off';
+}
+
+/* 把光标放进搜索框。舞台里的是真 input，所以聚焦态是真的，不是摆出来的 ——
+   差别（底线、底色、光标）都由 newtab.css 与风格令牌决定。 */
+function focusSearch() {
+  const q = stage.querySelector('.q');
+  if (q) q.focus();
+}
+
+// 设置按钮只开合自己的面板（与真页面一致：点按钮开、点面板外收）
+const settingsBtn = stage.querySelector('.settings');
+const panelEl = stage.querySelector('.panel');
+settingsBtn.addEventListener('click', () => {
+  const open = panelEl.hasAttribute('hidden');
+  panelEl.toggleAttribute('hidden', !open);
+  settingsBtn.setAttribute('aria-expanded', String(open));
+  if (open) focusSearch();
+});
+
+document.addEventListener('click', event => {
+  // 弹窗是从设置面板里开出来的，算面板的一部分：在弹窗里点来点去不该把后面的面板收掉
+  if (dlgEl.contains(event.target)) return;
+  if (panelEl.hasAttribute('hidden')) return;
+  if (panelEl.contains(event.target) || settingsBtn.contains(event.target)) return;
+  panelEl.setAttribute('hidden', '');
+  settingsBtn.setAttribute('aria-expanded', 'false');
+});
+
+/* ---------- 引导语的排版参数（面板最后 5 行）----------
+   这 5 行是**框架**的版式控件（用户 m03467：UI 的排布与控制不属于风格），
+   所以三套共用同一组默认值 —— 取的就是当初在暖陶里挑定的那套（41 / 55 / 居中 / −12% / 0）。
+   换皮肤时滑块读数、行内样式、引导语的位置一律不动，切风格看不出排版跳变。
+   拖滑块 → 行内样式覆盖；值等于默认值 → 行内样式清掉，
+   所以设计取值仍然只有 tokens.css 一个来源（--mark-size / --mark-gap / --mark-dy / --mark-dx）。 */
+const markEl = stage.querySelector('.mark');
+const boxEl = stage.querySelector('.fieldbox');
+const lineEl = stage.querySelector('.search');
+
+const num = (cs, name, fallback) => {
+  const v = Number.parseFloat(cs.getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+/* 只读一次：这一组是框架的默认值，不随 data-style 变，所以没有"换风格重读一遍"这回事。 */
+function readMarkDefaults() {
+  const cs = getComputedStyle(stage);
+  return {
+    size: num(cs, '--mark-size', 41),
+    gap: num(cs, '--mark-gap', 55),
+    align: 'center',
+    dy: num(cs, '--mark-dy', -12),
+    dx: num(cs, '--mark-dx', 0),
+  };
+}
+
+const markBase = readMarkDefaults();
+const markState = { ...markBase };
+
+function renderMark() {
+  const { size, gap, align, dy, dx } = markState;
+  markEl.style.fontSize = size === markBase.size ? '' : `${size}px`;
+  markEl.style.marginBottom = gap === markBase.gap ? '' : `${gap}px`;
+  boxEl.style.transform = dy === markBase.dy ? '' : `translateY(${dy}vh)`;
+  lineEl.style.transform = dx === markBase.dx ? '' : `translateX(${dx}px)`;
+  if (align === markBase.align) stage.removeAttribute('data-align');
+  else stage.setAttribute('data-align', align);
+}
+
+/* ---------- A3 · 引导语逐单元交叉淡入（换肤那一拍，用户 m05145 拍板） ----------
+   这张脸是屏幕上真正的视觉中心：字号 / 字重 / 字距 / 位置全是框架令牌，换肤时**只换字脸**
+   （--font-display：纸白是界面字、点阵是等宽、暖陶是衬线）。直接改令牌就是一帧换脸，
+   所以拆成两张叠着的脸：旧脸内联冻结当前字脸并逐单元退、新脸逐单元进，两副字共用一条时间轴
+   （--dur-theme 是唯一时长来源；世界那 17 条过渡也以它为基准）。
+   三条硬约束都是量出来的，别改回去：
+   ① 空白必须留作文本节点 —— 包成 inline-block 盒子会吃掉词距（实测 13 种语言里印地语、
+      阿拉伯语的词距会直接消失）；
+   ② 连写脚本（阿拉伯 / 希伯来 / 叙利亚 / 塔纳 / 西非书面语）不拆：字形上下文穿到相邻字母上，
+      切开就断连写，且 RTL 的视觉顺序也不该按逻辑序扫 → 静默降级成"整段交叉淡入"（用户 m05146）；
+   ③ 逐单元与整段的墨迹差 ≤0.9%（拉丁文 ≈0.2% 是跨单元的 kern 配对丢失）—— 观感代价可接受。 */
+const FACE_SEG = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+const FACE_CONNECTING = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}]/u;
+const FACE_UNIT_MAX = 60;   // 单元上限：再多就退回整段淡入（单元越多步长越小，60 在低端机上还留余量）
+const FACE_STEP_MAX = 26;   // 单元之间最大的错峰（ms）
+const FACE_RATIO = 0.6;     // 单个单元的淡入/淡出 = --dur-theme × 0.6
+const FACE_FILL = 0.805;    // 错峰的预算 = --dur-theme × 0.805；未被 FACE_STEP_MAX 截住时总窗 = ×1.405
+                            // （420ms → 590ms），默认 13 个单元时步长截在 26ms、总窗 564ms
+// 文本的唯一来源：拆过之后 DOM 里是两张脸，再从 DOM 反读就会读到重复的文本
+const markText = markEl.textContent.trim();
+let faceTimer = 0;          // 正在飞的那一次的收尾计时器
+let faceGen = 0;            // 第几次飞行：迟到的 rAF / 计时器不许再改已经收尾的那一次
+
+function faceUnits(host, text) {
+  let units = 0;
+  for (const { segment } of FACE_SEG.segment(text)) {
+    // 约束①：空白留作文本节点，不包盒
+    if (/^\s+$/.test(segment)) { host.append(document.createTextNode(segment)); continue; }
+    const u = document.createElement('span');
+    u.className = 'mk-u';
+    u.textContent = segment;
+    u.style.setProperty('--i', units);   // 错峰按单元序（从左往右；空白不占格）
+    host.append(u);
+    units += 1;
+  }
+  return units;
+}
+
+/* 改 data-style 之前把两张脸拆好，返回一个 play()：调用方改完皮肤、在同一帧里调它。 */
+function beginFaceSwitch() {
+  if (faceTimer) finishFaceSwitch();   // 上一次还在飞：先跳到终态（连点换肤的竞态）
+  const world = num(getComputedStyle(stage), '--dur-theme', 0);
+  // 时长归零（首屏 / 减少动效）：不拆字，也不交叉淡入 —— 当场换掉，别先闪两帧旧字
+  if (world <= 0) return null;
+  const oldFace = document.createElement('span');
+  oldFace.className = 'mk-face is-old';
+  // ★ 先冻结旧字脸：data-style 一改，这张脸会跟着新皮肤一起换字，那就没有"旧"了
+  oldFace.style.fontFamily = getComputedStyle(markEl).fontFamily;
+  const units = faceUnits(oldFace, markText);
+
+  // 约束②③ + 首屏/减少动效（时长归零）：不拆单元，退回整张脸的交叉淡入
+  const split = world > 0 && units > 1 && units <= FACE_UNIT_MAX && !FACE_CONNECTING.test(markText);
+  if (!split) oldFace.textContent = markText;
+
+  const newFace = document.createElement('span');
+  newFace.className = 'mk-face is-new';
+  if (split) faceUnits(newFace, markText); else newFace.textContent = markText;
+
+  markEl.textContent = '';
+  markEl.classList.toggle('is-plain', !split);
+  markEl.append(oldFace, newFace);
+
+  // 时长：单个单元 --mk-face；单元之间的错峰按单元数反算，正好填满同一个时间窗
+  const face = world * FACE_RATIO;
+  const step = split ? Math.min(FACE_STEP_MAX, (world * FACE_FILL) / (units - 1)) : 0;
+  markEl.style.setProperty('--mk-face', `${face}ms`);
+  markEl.style.setProperty('--mk-step', `${step}ms`);
+  const span = face + (split ? (units - 1) * step : 0);
+
+  const gen = ++faceGen;
+  return () => {
+    // 起始态要先落地：新建的元素若在同一帧里被加上终点态，浏览器不会跑过渡
+    markEl.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      // 迟到的 rAF（切后台、主线程卡顿）不许再给已经收尾的那一次加类，否则类会留在 DOM 上
+      if (gen !== faceGen) return;
+      markEl.classList.add('is-flying');
+      // 收尾计时器从 is-flying 真正落地那一刻起算（不是从 play() 起算），余量才够
+      clearTimeout(faceTimer);
+      faceTimer = setTimeout(finishFaceSwitch, span + 60);
+    });
+  };
+}
+
+/* 收尾：把新脸提成唯一的那张脸，DOM 回到"一段文本" —— 不这样做，两张脸会一直累积，
+   而且下一次换肤的起始态会带着上一次的残留。 */
+function finishFaceSwitch() {
+  clearTimeout(faceTimer);
+  faceTimer = 0;
+  faceGen += 1;               // 作废那一次飞行还挂着的 rAF / 计时器
+  markEl.classList.remove('is-flying', 'is-plain');
+  markEl.textContent = markText;
+  markEl.style.removeProperty('--mk-face');
+  markEl.style.removeProperty('--mk-step');
+}
+
+/* 对齐这一格比较特殊：它也是版式控件、也用滑块，但档位不是数字而是三个字符串，
+   所以滑块的位置 ↔ 取值要换算一次。顺序按空间排（左缘 → 居中 → 右缘），
+   往右拖就是往右靠，默认档落在正中间那一格。 */
+const MARK_ALIGNS = ['start', 'center', 'end'];
+const MARK_ALIGN_LABELS = ['左缘', '居中', '右缘'];
+
+/* 输出那一格（滑块右边）：对齐走文字档位，竖直位置带 %，其余带 px。
+   顺便把"已填充到哪儿"写成 --slider-frac（0..1，不是百分比）—— 滑块的头、已填充、
+   未填充三段都画在 CSS 的那一层背景里，横坐标全由这一个数算出来。写成同一个数是有原因的：
+   头由浏览器按它自己的轨道模型摆（两端各缩进半个头）、轨迹由 CSS 按百分比摆时，两者会差出
+   小半格（用户 m04538 报的位置偏移）。 */
+function paintParam(input) {
+  const key = input.dataset.param;
+  // 输出那一格挂在 .rs 上（input 自己被包进 .sl 画布，不能再从它的 parentElement 找 output）
+  const out = input.closest('.rs').querySelector('output');
+  out.textContent = key === 'align'
+    ? MARK_ALIGN_LABELS[Number(input.value)]
+    : (key === 'dy' ? `${markState.dy}%` : `${markState[key]}px`);
+  const min = Number(input.min);
+  const span = (Number(input.max) - min) || 1;
+  // 写在画布（.sl）上：两段轨迹（::before / ::after）与滑块头（.knob）都从它拿横坐标
+  input.parentElement.style.setProperty('--slider-frac', String((Number(input.value) - min) / span));
+}
+
+stage.querySelectorAll('[data-param]').forEach(input => {
+  const key = input.dataset.param;
+  const isAlign = key === 'align';
+  // 滑块头与两段轨迹由框架自己画（见 preview.css 的说明）：先把 input 包进一块 96×14 的画布，
+  // 头作为画布上的一个元素跟着 --slider-frac 走。头心与已填充的右端用同一个算式算出来，
+  // 不会再出现"头由浏览器按自己的轨道模型摆、轨迹由 CSS 按百分比摆"那种错位（用户 m04538）。
+  const canvas = document.createElement('span');
+  canvas.className = 'sl';
+  input.replaceWith(canvas);
+  canvas.append(input);
+  const knob = document.createElement('span');
+  knob.className = 'knob';
+  knob.setAttribute('aria-hidden', 'true');   // 只是画面：拖动、键盘、量程仍是 input 的事
+  canvas.append(knob);
+  // 滑块位置 → 取值（对齐是字符串，其余是数字）
+  const read = () => (isAlign ? MARK_ALIGNS[Number(input.value)] : Number(input.value));
+  // 初始位置以令牌默认值为准：markup 里写错也不会与设计取值对不上
+  input.value = String(isAlign ? MARK_ALIGNS.indexOf(markBase[key]) : markBase[key]);
+  markState[key] = read();
+  paintParam(input);
+  input.addEventListener('input', () => {
+    markState[key] = read();
+    paintParam(input);
+    renderMark();
+  });
+});
+
+renderMark();
+
+/* ---------- 面板里的选项行：真正的二级下拉菜单（三套共用）----------
+   用户 m05424：这些行原来"看着像下拉菜单、逻辑却是点击轮换"。现在点开是列表、点一项即选中。
+   菜单按行的标签文字挂上去（不复制 5 份 markup），选项表就是下面这一张 ——
+   顺序与正式页 newtab.js 里的 LEADS / FOCUSES / DARK_MODES / STYLES 对齐，
+   三套风格共用同一张表（风格那一行也是这张表，选了就等于切 data-style）。
+   选中之后的可见效果走这一页自己的机制（show / applyDark / data-lead / data-focus）。
+   「引导语对齐」不在里面 —— 它是版式控件，和上面几行一样是滑块（用户 m00768）。
+   「默认搜索引擎」也不在里面 —— 它这一轮变成"复选 + 拖动排序 + 轮切"了，
+   选项由 engineOrder 现场拼（见下面那一节），不再是一张固定的表（用户 m01021）。 */
+const MENUS = {
+  lead: [['icon', '放大镜'], ['prompt', '提示符 >']],
+  focus: [['line', '深灰细线'], ['hold', '不变']],
+  // 与正式页 newtab.js 的 DARK_MODES 对齐：on = 常暗、off = 常亮（别写反了）
+  dark: [['auto', '跟随系统'], ['on', '常暗'], ['off', '常亮']],
+  style: [['paper', '纸白'], ['grid', '点阵'], ['clay', '暖陶']],
+};
+
+/* ---------- 「默认搜索引擎」：复选 + 拖动排序 + 轮切（用户 m01021） ----------
+   菜单长相一点没动（还是那个克制的 ✓），变的全是行为：
+   · 复选：✓ = "这个引擎参与轮切"，可以同时亮着几个（默认 = Bing + Google）；
+   · 轮切：点搜索线右侧那个引擎名 → 按菜单里从上到下的次序走到下一个复选着的引擎；
+   · 顺序：在菜单里按住某条引擎上下拖就能改，轮切跟着这个次序走；
+   · 「自定义…」是动作不是引擎：固定压在最后（那道发丝线就是它），不参与拖动、不参与复选。
+   看稿页只做前端：真页面的引擎表在 newtab.js 里，这里不接、也不落盘。 */
+const ENGINE_NAMES = { bing: 'Bing', google: 'Google' };
+const engineOrder = ['bing', 'google'];              // 已添加引擎的上下关系（拖出来的）
+const engineChecked = new Set(['bing', 'google']);   // 参与轮切的引擎（复选，默认两个）
+let activeEngine = 'bing';                           // 当前生效的引擎：轮切指针，也是行里显示的值
+let customEngineName = '';
+let customEngineUrl = '';
+
+function engineLabel(value) {
+  if (value === 'custom') return customEngineName || '自定义';
+  return ENGINE_NAMES[value] || value;
+}
+
+/* 菜单选项：已添加的引擎按当前次序排，最后压一条「自定义…」（action = 开弹窗，不是选项） */
+function engineOptions() {
+  return engineOrder.map(value => ({ value, label: engineLabel(value), action: false }))
+    .concat([{ value: 'custom', label: '自定义…', action: true }]);
+}
+
+function menuOptions(key) {
+  if (key === 'engine') return engineOptions();
+  return MENUS[key].map(([value, label]) => ({ value, label, action: false }));
+}
+
+const ROW_KEYS = new Map([
+  ['默认搜索引擎', 'engine'],
+  ['搜索框左侧', 'lead'],
+  ['焦点反馈', 'focus'],
+  ['暗色', 'dark'],
+  ['风格', 'style'],
+]);
+
+/* 行里的初始读数。style 这一格必须与页面默认皮肤一致 —— 曾经这里写着 'clay'，
+   而舞台 markup 是纸白，于是页面上是纸白、设置里写暖陶（用户 m03467 报的那个 bug）。 */
+const menuState = { lead: 'icon', focus: 'line', dark: 'auto', style: 'paper' };
+
+const menus = [];
+
+function buildMenu(key, label) {
+  const menu = document.createElement('div');
+  menu.className = 'menu';
+  menu.setAttribute('role', 'listbox');
+  menu.setAttribute('aria-label', label);
+  menu.dataset.menuKey = key;   // 给探针一个纯 CSS 的抓手（行里的 :has()/:text-is() 只在 Playwright 里能用）
+  // 引擎那一行是复选，listbox 的语义得配套（读屏才会念"可多选"）；
+  // 类名给 CSS 认"这是唯一可拖动排序的那张清单"（别的菜单的选项不给 grab 光标）
+  if (key === 'engine') {
+    menu.setAttribute('aria-multiselectable', 'true');
+    menu.classList.add('menu-engine');
+  }
+  menu.hidden = true;
+  menuOptions(key).forEach(({ value, label: optLabel, action }) => {
+    const opt = document.createElement('button');
+    opt.type = 'button';
+    opt.className = 'menu-opt';
+    opt.setAttribute('role', 'option');
+    opt.setAttribute('aria-selected', 'false');
+    opt.dataset.value = value;
+    if (action) opt.dataset.action = value;   // 「自定义…」：开弹窗，不参与复选、也不参与拖动
+    opt.innerHTML = `<span>${optLabel}</span>`
+      + '<svg class="menu-check" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+      + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+      + '<path d="M20 6L9 17l-5-5"></path></svg>';
+    menu.append(opt);
+  });
+  return menu;
+}
+
+function byMenuKey(key) { return menus.find(m => m.key === key); }
+
+/* 面板行的单一入口：hash 还原、菜单选择、以及菜单里"改了风格"那一支都从这里落到行上，
+   免得"页面已经变了、行里还写着上一档"。 */
+function setMenuValue(key, value) {
+  menuState[key] = value;
+  const item = byMenuKey(key);
+  if (item) paintMenu(item);
+}
+
+function paintMenu(item) {
+  // 引擎那一行显示的是"当前生效的引擎"，✓ 则逐个代表"参与轮切"（可同时亮几个）
+  if (item.key === 'engine') {
+    item.valueEl.textContent = engineLabel(activeEngine);
+    item.opts.forEach(o => o.setAttribute('aria-selected',
+      String(!o.dataset.action && engineChecked.has(o.dataset.value))));
+    return;
+  }
+  const value = menuState[item.key];
+  const found = MENUS[item.key].find(([v]) => v === value);
+  item.valueEl.textContent = found ? found[1] : '';
+  item.opts.forEach(o => o.setAttribute('aria-selected', String(o.dataset.value === value)));
+}
+
+/* 引擎那一行的三个出口（行里的值、搜索线右侧的名、菜单里的 ✓）永远一起走。
+   这里只写**内容**：标签里永远是规范那个句子形（Bing）。
+   大小写是"呈现"，由 preview.css 按皮肤决定（纸白/点阵 text-transform: uppercase，暖陶 none）——
+   同一份内容，换皮肤只换穿法。 */
+function paintEngine() {
+  const item = byMenuKey('engine');
+  if (item) paintMenu(item);
+  const tag = stage.querySelector('.search .tag');
+  tag.textContent = engineLabel(activeEngine);
+  tag.setAttribute('aria-label', `切换搜索引擎，当前 ${engineLabel(activeEngine)}`);
+}
+
+/* 轮切：点搜索线右侧那个引擎名，按菜单里从上到下的次序走下一个复选着的引擎 */
+function rotateEngine(step = 1) {
+  const list = engineOrder.filter(v => engineChecked.has(v));
+  if (!list.length) return;
+  const at = list.indexOf(activeEngine);
+  activeEngine = list[(at + step + list.length) % list.length];
+  paintEngine();
+}
+
+/* 勾上 / 取消一个引擎。至少留一个：全不勾就没有引擎可用，轮切和行里的值都会失去落点。 */
+function toggleEngine(value) {
+  if (engineChecked.has(value)) {
+    if (engineChecked.size === 1) return;
+    engineChecked.delete(value);
+    // 取消掉的正好是当前生效的那个：指针交给剩下第一个复选着的引擎
+    if (activeEngine === value) activeEngine = engineOrder.find(v => engineChecked.has(v)) || value;
+  } else {
+    engineChecked.add(value);
+  }
+  paintEngine();
+}
+
+function closeMenus() {
+  menus.forEach(m => {
+    m.menu.hidden = true;
+    m.btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function openMenu(item, moveFocus = true) {
+  closeMenus();
+  closeDialog(false);
+  item.menu.hidden = false;
+  item.btn.setAttribute('aria-expanded', 'true');
+  if (!moveFocus) return;   // hash 摆状态时不抢焦点（焦点环会让基准图不稳）
+  const current = item.key === 'engine'
+    ? (item.opts.find(o => o.dataset.value === activeEngine && !o.dataset.action) || item.opts[0])
+    : (item.opts.find(o => o.getAttribute('aria-selected') === 'true') || item.opts[0]);
+  current.focus();
+}
+
+/* 选完把焦点还给那一行的按钮 —— 除非这一行把整套舞台换掉了（风格那一行），
+   那时按钮自己已经被隐藏，焦点交给新舞台的设置按钮，别让它掉到 body。 */
+function focusRow(item) {
+  if (item.btn.offsetParent !== null) { item.btn.focus(); return; }
+  const live = document.querySelector('.stage[data-active]');
+  const next = live && live.querySelector('.settings');
+  if (next) next.focus();
+}
+
+function selectOption(item, opt) {
+  if (item.key === 'engine') {
+    // 「自定义…」是动作不是选项：开弹窗，行里的值与 ✓ 都不动
+    if (opt.dataset.action) { openDialog(item.btn); return; }
+    toggleEngine(opt.dataset.value);
+    return;   // 复选菜单不关：连着勾几个才顺手（点外面 / Esc 一样收）
+  }
+  const value = opt.dataset.value;
+  // 交给行里那个按钮，不是菜单项：菜单项马上就被 closeMenus() 藏起来，
+  // 焦点落在 display:none 上是空操作 —— 弹窗关掉之后焦点就掉到 body 了。
+  if (item.key === 'dark') {
+    applyDark(value === 'auto'
+      ? matchMedia('(prefers-color-scheme: dark)').matches
+      : value === 'on');
+    // applyDark 只认"明/暗"两档，它会把行里的值写成常暗/常亮；
+    // 「跟随系统」这一档由这里补回来（顺序在后，覆盖得掉）。
+    menuState.dark = value;
+  } else {
+    menuState[item.key] = value;
+    if (item.key === 'style') show(value);
+    else if (item.key === 'lead') stage.dataset.lead = value;
+    else if (item.key === 'focus') stage.dataset.focus = value;
+  }
+  paintMenu(item);
+  closeMenus();
+  focusRow(item);
+}
+
+/* ---------- 引擎行的拖动排序 ----------
+   指引刻意做得轻：平时只有 cursor: grab 这一条线索，不挂抓手图标、不加 hover 底色；
+   真拖起来时源行淡下去、落点画一道珊瑚发丝线（伪元素，不占布局、不挤动别的行）。
+   拖动只改 engineOrder，轮切次序跟着它走；顺带给了条键盘通路（Alt + ↑↓）。 */
+let dragState = null;
+let swallowClick = null;   // { fn, menu }：拖动松手后要吞掉的那个 click
+
+/* 拖动松手之后浏览器还会补一个 click，而且多半落在菜单上、不是某一条选项上 ——
+   不吞掉它的话，松手那一下会顺手把 ✓ 翻掉。这里装一个一次性的捕获监听：
+   吞掉紧跟的那一个 click 就自己摘掉；万一那次 click 没来（松手在菜单之外），
+   下一次 pointerdown 也会把它摘掉，绝不留给下一次交互。 */
+function clearSwallowClick() {
+  if (!swallowClick) return;
+  swallowClick.menu.removeEventListener('click', swallowClick.fn, true);
+  swallowClick = null;
+}
+
+function swallowNextClick(menuEl) {
+  clearSwallowClick();
+  const fn = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearSwallowClick();
+  };
+  swallowClick = { fn, menu: menuEl };
+  menuEl.addEventListener('click', fn, true);
+}
+
+function dragIndexAt(clientY, opts) {
+  // "插到第几条引擎之前"；等于引擎条数 就是插到最后
+  const engines = opts.filter(o => !o.dataset.action);
+  for (let i = 0; i < engines.length; i += 1) {
+    const box = engines[i].getBoundingClientRect();
+    if (clientY < box.top + box.height / 2) return i;
+  }
+  return engines.length;
+}
+
+function paintDropMark(item, index) {
+  item.opts.forEach(o => o.classList.remove('is-drop-before', 'is-drop-after'));
+  const engines = item.opts.filter(o => !o.dataset.action);
+  if (!engines.length) return;
+  if (index >= engines.length) engines[engines.length - 1].classList.add('is-drop-after');
+  else engines[index].classList.add('is-drop-before');
+}
+
+function clearDropMark(item) {
+  item.opts.forEach(o => o.classList.remove('is-drop-before', 'is-drop-after'));
+}
+
+/* 换位：to 是"插到第 to 条引擎之前"，摘掉自己之后下标会前移一位 */
+function reorderEngine(value, to) {
+  const from = engineOrder.indexOf(value);
+  if (from < 0) return;
+  const next = engineOrder.slice();
+  next.splice(from, 1);
+  next.splice(to > from ? to - 1 : to, 0, value);
+  if (next.join() === engineOrder.join()) return;   // 没挪动就不重建，免得白闪一下
+  engineOrder.splice(0, engineOrder.length, ...next);
+  rebuildEngineMenu(value);
+}
+
+function rebuildEngineMenu(focusValue = null) {
+  const item = byMenuKey('engine');
+  if (!item) return;
+  const wasOpen = !item.menu.hidden;
+  const next = buildMenu('engine', '默认搜索引擎');
+  next.hidden = !wasOpen;
+  item.menu.replaceWith(next);
+  item.menu = next;
+  item.opts = [...next.querySelectorAll('.menu-opt')];
+  wireMenu(item);
+  paintEngine();   // 行里的值 + 搜索线右侧那个名字都要跟着走（重建菜单不能只画菜单）
+  if (focusValue) {
+    const opt = item.opts.find(o => o.dataset.value === focusValue && !o.dataset.action);
+    if (opt) opt.focus();
+  }
+}
+
+function wireEngineDrag(item, opt) {
+  opt.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    clearSwallowClick();   // 上一次拖动留下的标记不许吃掉这一次的点击
+    dragState = { item, opt, value: opt.dataset.value, y0: event.clientY, moved: false, to: null };
+    opt.setPointerCapture(event.pointerId);
+  });
+  opt.addEventListener('pointermove', event => {
+    if (!dragState || dragState.opt !== opt) return;
+    if (!dragState.moved) {
+      if (Math.abs(event.clientY - dragState.y0) < 4) return;   // 4px 以内仍算点击
+      dragState.moved = true;
+      opt.classList.add('is-dragging');
+    }
+    dragState.to = dragIndexAt(event.clientY, item.opts);
+    paintDropMark(item, dragState.to);
+  });
+  const finish = event => {
+    if (!dragState || dragState.opt !== opt) return;
+    const { moved, to, value } = dragState;
+    dragState = null;
+    opt.classList.remove('is-dragging');
+    clearDropMark(item);
+    if (opt.hasPointerCapture(event.pointerId)) opt.releasePointerCapture(event.pointerId);
+    if (!moved || to === null) return;
+    swallowNextClick(item.menu);   // 这一下是拖动不是点击，别顺手把 ✓ 也翻了
+    reorderEngine(value, to);
+  };
+  opt.addEventListener('pointerup', finish);
+  opt.addEventListener('pointercancel', finish);
+}
+
+/* 菜单的交互挂在选项自己身上 —— 选项是新造的，重建菜单之后要重新挂一遍 */
+function wireMenu(item) {
+  item.opts.forEach(opt => {
+    opt.addEventListener('pointerdown', clearSwallowClick);
+    opt.addEventListener('click', () => selectOption(item, opt));
+    if (item.key === 'engine' && !opt.dataset.action) wireEngineDrag(item, opt);
+  });
+  // listbox 就该认方向键（声明了 role 就得给键盘通路）：↑↓ 循环、Home/End 到两头。
+  // Enter/Space 不用管 —— 它们本来就是按钮，会正常触发 click。
+  // 引擎那一行再给一条不动鼠标的排序通路：Alt + ↑↓ 把当前这条往前/往后挪。
+  item.menu.addEventListener('keydown', event => {
+    const key = event.key;
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(key)) return;
+    event.preventDefault();
+    if (event.altKey && item.key === 'engine') {
+      const opt = document.activeElement;
+      if (!opt || opt.dataset.action) return;
+      const at = engineOrder.indexOf(opt.dataset.value);
+      if (at < 0) return;
+      if (key === 'ArrowDown' && at < engineOrder.length - 1) reorderEngine(opt.dataset.value, at + 2);
+      if (key === 'ArrowUp' && at > 0) reorderEngine(opt.dataset.value, at - 1);
+      return;
+    }
+    const count = item.opts.length;
+    const at = item.opts.indexOf(document.activeElement);
+    const next = key === 'Home' ? 0
+      : key === 'End' ? count - 1
+        : key === 'ArrowDown' ? (at + 1) % count
+          : (at < 0 ? count - 1 : (at - 1 + count) % count);
+    item.opts[next].focus();
+  });
+}
+
+/* 把面板里那 5 行升级成菜单：按标签文字认行，以后行序变了也不会错位。
+   对齐那一行没有 .rv（它是滑块），自然就被下面这道 if 挡在外面。 */
+stage.querySelectorAll('.panel .row').forEach(row => {
+  const labelEl = row.querySelector('.rl');
+  const btn = row.querySelector('.rv');
+  if (!labelEl || !btn) return;
+  const key = ROW_KEYS.get(labelEl.textContent.trim());
+  if (!key) return;
+  const item = {
+    key,
+    btn,
+    valueEl: btn.querySelector('span'),
+    menu: buildMenu(key, labelEl.textContent.trim()),
+    opts: [],
+  };
+  item.opts = [...item.menu.querySelectorAll('.menu-opt')];
+  btn.setAttribute('aria-haspopup', 'listbox');
+  btn.setAttribute('aria-expanded', 'false');
+  row.append(item.menu);
+  menus.push(item);
+  btn.addEventListener('click', () => {
+    if (item.menu.hidden) openMenu(item);
+    else closeMenus();
+  });
+  wireMenu(item);
+});
+
+menus.forEach(paintMenu);
+paintEngine();
+
+/* 搜索线右侧那个引擎名：点一下 = 轮切到下一个复选着的引擎（Enter/Space 同效）
+   轮切与"光标在不在搜索框里"必须互不影响，所以按住它的那一下要拦掉浏览器的默认动作：
+   mousedown 的默认行为里含"把焦点搬到自己身上"和"开始选文字"—— 前者会把光标从输入框
+   里赶走（连带点亮搜索线的焦点态），后者在连点时会选中文字（一片蓝底）。
+   拦掉默认动作不影响后面照常派发的 click，所以轮切本身照旧。（键盘 Tab 过来仍可聚焦，
+   Enter/Space 照旧能轮切。） */
+const tagEl = stage.querySelector('.search .tag');
+tagEl.addEventListener('mousedown', event => event.preventDefault());
+tagEl.addEventListener('click', () => rotateEngine());
+tagEl.addEventListener('keydown', event => {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  rotateEngine();
+});
+
+/* ---------- 自定义搜索引擎弹窗（只在前端：保存 = 定义/改写"自定义"这个引擎） ---------- */
+const dlgEl = stage.querySelector('[data-dlg]');
+const dlgName = stage.querySelector('[data-dlg-name]');
+const dlgUrl = stage.querySelector('[data-dlg-url]');
+const dlgSave = stage.querySelector('[data-dlg-save]');
+let dlgReturn = null;
+
+function validateDialog() {
+  dlgSave.disabled = !(dlgName.value.trim() !== '' && dlgUrl.value.includes('%s'));
+}
+
+function openDialog(from, moveFocus = true) {
+  dlgReturn = from;
+  closeMenus();
+  dlgEl.hidden = false;
+  dlgName.value = customEngineName || '';
+  dlgUrl.value = customEngineUrl || '';
+  validateDialog();
+  if (moveFocus) dlgName.focus();
+}
+
+function closeDialog(returnFocus = true) {
+  if (dlgEl.hidden) return;
+  dlgEl.hidden = true;
+  if (returnFocus && dlgReturn) dlgReturn.focus();
+}
+
+stage.querySelector('[data-dlg-cancel]').addEventListener('click', () => closeDialog());
+dlgEl.addEventListener('click', event => { if (event.target === dlgEl) closeDialog(); });
+[dlgName, dlgUrl].forEach(input => input.addEventListener('input', validateDialog));
+dlgSave.addEventListener('click', () => {
+  customEngineName = dlgName.value.trim();
+  customEngineUrl = dlgUrl.value.trim();
+  if (!engineOrder.includes('custom')) engineOrder.push('custom');   // 新引擎压在已添加的最后
+  engineChecked.add('custom');    // 新定义好就参与轮切
+  activeEngine = 'custom';        // 并且立刻生效（行里的值、搜索线右侧的名字都跟着走）
+  rebuildEngineMenu();
+  closeDialog();
+});
+
+/* 点别处：菜单与弹窗一起收。
+   菜单自己与触发它的那个按钮交给各自的监听处理（否则刚点开就被这里关掉）；
+   面板本身由上面那段通用逻辑收。菜单开着时点面板里别的地方（行标题、滑块）也要收 ——
+   不然"列表开着、点哪儿都不动"，读起来像坏了。 */
+document.addEventListener('click', event => {
+  if (dlgEl.contains(event.target)) return;
+  if (event.target.closest('.menu')) return;
+  const btn = event.target.closest('.rv');
+  if (!btn || btn.getAttribute('aria-haspopup') !== 'listbox') {
+    closeMenus();
+  }
+  if (!stage.querySelector('.panel').contains(event.target)) closeDialog(false);
+});
+
+/* Esc 的优先级：弹窗 > 菜单 > 面板，一次只关一层。
+   弹窗声明了 aria-modal，就得把键盘也关在里头：Tab 只能在弹窗自己的可聚焦元素之间循环，
+   否则 Tab 两下就落到被遮罩盖住、看不见的搜索框里，字打进去也看不见。 */
+addEventListener('keydown', event => {
+  if (event.key === 'Tab' && !dlgEl.hidden) {
+    const stops = [...dlgEl.querySelectorAll('button:not([disabled]), input')];
+    if (!stops.length) return;
+    const first = stops[0];
+    const last = stops[stops.length - 1];
+    const inside = dlgEl.contains(document.activeElement);
+    if (event.shiftKey && (!inside || document.activeElement === first)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (!inside || document.activeElement === last)) {
+      event.preventDefault();
+      first.focus();
+    }
+    return;
+  }
+  if (event.key !== 'Escape') return;
+  if (!dlgEl.hidden) { closeDialog(); return; }
+  const open = menus.find(m => !m.menu.hidden);
+  if (open) { closeMenus(); open.btn.focus(); return; }
+  const panel = stage.querySelector('.panel');
+  if (panel.hasAttribute('hidden')) return;
+  panel.setAttribute('hidden', '');
+  stage.querySelector('.settings').setAttribute('aria-expanded', 'false');
+});
+
+// 支持 #<风格>[+dark][+panel][+noserif][+focus][+menu][+dlg] 直接摆好状态，方便截图与视觉回归比对：
+//   #paper          —— 纸白
+//   #grid           —— 点阵
+//   #clay           —— 暖陶
+//   #paper+dark     —— 纸白的暗色
+//   #grid+dark+panel—— 点阵的暗色并展开设置面板
+//   #clay+noserif   —— 暖陶并关掉衬线（对比中文小字号的观感）
+//   #clay+focus     —— 暖陶并把光标放进搜索框（看底线转珊瑚 + 下方那一道）
+//   #clay+menu      —— 暖陶 + 设置面板 + 展开「默认搜索引擎」的二级下拉菜单
+//   #clay+stylemenu —— 暖陶 + 设置面板 + 展开「风格」那一行（发布态唯一的换风格入口）
+//   #clay+dlg       —— 暖陶 + 自定义搜索引擎弹窗（保存按钮此时是禁用的）
+// 注：页面里已经没有看稿工具条（用户 m02895 拿掉，换风格走设置里的「风格」那一行），
+// 所以旧截图 URL 里的 `+bare` 现在只是一个被忽略的 token，不会改任何状态。
+const STYLE_NAMES = ['paper', 'grid', 'clay'];
+/* 用户 m03467：纸白是默认呈现给用户的那一套。舞台上 markup 写的就是 paper，
+   但"皮肤"这件事只有一个入口 —— 统一从这里 show() 一次，面板「风格」那一行才不会
+   停在 markup 里那个旧值上（曾经就是这里漏了默认分支，导致页面上是纸白、设置里却写暖陶）。 */
+const DEFAULT_STYLE = 'paper';
+/* 首屏不许有过场：换肤 / 亮暗那 420ms 的逐色淡出是给"用户主动切换"的。
+   按 hash 播种、或首次落位到默认皮肤，都必须是瞬时的 —— 否则每开一个新标签页
+   都会看到整页颜色淡进来（也违背"页面上不做装饰性动画"那条纪律）。
+   两帧之后把它摘掉，之后的所有切换恢复过渡。 */
+stage.setAttribute('data-booting', '');
+const parts = location.hash.slice(1).split('+').filter(Boolean);
+const picked = parts.find(p => STYLE_NAMES.includes(p));
+applySerif(true);
+applyDark(false);
+show(picked || DEFAULT_STYLE);
+paintEngine();
+if (parts.includes('dark')) applyDark(true, 'on');
+if (parts.includes('noserif')) applySerif(false);
+if (parts.includes('panel') || parts.includes('menu') || parts.includes('stylemenu') || parts.includes('dlg')) {
+  panelEl.removeAttribute('hidden');
+  settingsBtn.setAttribute('aria-expanded', 'true');
+}
+if (parts.includes('focus')) focusSearch();
+if (parts.includes('menu')) openMenu(byMenuKey('engine'), false);
+if (parts.includes('stylemenu')) openMenu(byMenuKey('style'), false);
+if (parts.includes('dlg')) openDialog(stage.querySelector('.settings'), false);
+/* 这两个状态是给截图/视觉回归摆的：焦点环取决于交互模态、不稳，
+   所以程序化打开之后把焦点让出去，基准图才逐字节可复现。 */
+if (parts.includes('menu') || parts.includes('stylemenu') || parts.includes('dlg')) {
+  if (document.activeElement) document.activeElement.blur();
+}
+/* 首屏的这一帧已经画完（含上面这些被 hash 播出来的状态），可以恢复过渡了 */
+requestAnimationFrame(() => requestAnimationFrame(() => stage.removeAttribute('data-booting')));
+</script>
+</body>
+</html>

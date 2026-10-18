@@ -1,0 +1,216 @@
+/* ============================================================
+   风格扩充探索 01（第二批）：以 E 暖陶 为基准，往"程序 / 终端"的方向做。
+
+   两条共同约束（来自 m03195）：
+     · 搜索框永远横向居中 —— 挂在它周围的东西一律用绝对定位，
+       不把字段挤出中轴（02 的行号就是挂在左侧留白里）。
+     · 配色与字段外观不动：取值来自 LineTab/tokens.css，
+       字段与舞台结构来自 LineTab/newtab.css，看稿外壳与 E 暖陶 的组件修正来自 preview.css。
+
+   本文件只写这一批新增的零件，`.x-` 前缀的都是探索页专用（真页面里还没有它们）。
+   ============================================================ */
+
+/* ---------- 01 每日一句（第一批留下的那一版，你说"稍微好一些"）---------- */
+.x-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.x-quote {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--font-2xl);
+  line-height: var(--lh-normal);
+  color: var(--text);
+  text-align: center;
+}
+
+.x-cite {
+  margin: 0;
+  font-size: var(--font-md);
+  color: var(--text-3);
+}
+
+.x-act {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-md);
+  cursor: pointer;
+}
+
+.x-act:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* ---------- 02 第 1 行：编辑器的行号 gutter ----------
+   隐喻：新标签页 = 新文件，搜索是它的第 1 行。
+   行号与那条竖发丝线都挂在字段左侧的留白里，字段本身仍然居中。 */
+.stage[data-variant="v2"] .fieldbox { position: relative; }
+
+.stage[data-variant="v2"] .fieldbox::before {
+  content: "";
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  bottom: 14px;
+  width: var(--hairline);
+  background: var(--border);
+}
+
+.x-gutter {
+  position: absolute;
+  left: -44px;
+  bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+/* ---------- 03 终端窗：四角的等宽小字（写的是真状态，不是装饰）----------
+   左上窗名、左下当前风格与明暗、右下存储与"不发请求"的承诺；
+   齿轮仍在右下 32px 原位，所以右下这条留出 96px 避让。 */
+.x-head,
+.x-foot {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  color: var(--text-3);
+}
+
+.x-head { top: 24px; left: 32px; right: 32px; }
+.x-foot { bottom: 32px; left: 32px; right: 96px; }
+
+/* ---------- 04 命令补全：输入时跟在文字后面的灰色幽灵建议 ----------
+   位置由 JS 用"与输入框同字体的隐形量宽元素"算出来（细节体验台用过同一招）。 */
+.stage[data-variant="v4"] .search { position: relative; }
+
+.x-ghost {
+  position: absolute;
+  bottom: 12px;
+  font-size: var(--font-lg);
+  color: var(--text-3);
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* 量宽用的隐形元素：只参与测量，不参与排版与阅读 */
+.x-measure {
+  position: absolute;
+  top: 0;
+  left: -9999px;
+  visibility: hidden;
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* ---------- 05 命令面板：在搜索框里打一个 / 唤出的本机命令 ----------
+   排版照 TUI 菜单来：左边一个 `›` 选中标记、命令名等宽、当前值右对齐；
+   面板本身复用真页面设置面板的那套令牌（底色 / 描边 / 阴影 / 圆角）。 */
+.x-menu {
+  width: 320px;
+  margin-top: 8px;
+  margin-right: auto;      /* 在居中的 .fieldbox 里靠左，与字段左端对齐 */
+  padding: 6px;
+  background: var(--panel-bg);
+  border: var(--panel-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--panel-shadow);
+}
+
+.x-menu[hidden] { display: none; }
+.x-menu-row[hidden] { display: none; }   /* 按钮自己带 display:flex，压不过 [hidden]，得明写一条 */
+
+.x-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-md);
+  color: var(--text-2);
+  text-align: left;
+  cursor: pointer;
+}
+
+.x-menu-row:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.x-menu-on { color: var(--text); }
+
+.x-menu-mark {
+  flex: none;
+  width: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+  visibility: hidden;      /* 只有选中那一行显示 `›`；位置留着，所以文字左边缘不会跳 */
+}
+
+.x-menu-on .x-menu-mark { color: var(--text); visibility: visible; }
+.x-menu-name { font-family: var(--font-mono); }
+.x-menu-value { margin-left: auto; font-family: var(--font-mono); color: var(--text-3); }
+
+/* ---------- 06 提示符 ❯ + 块状光标（画出来的静态样张）----------
+   浏览器只让改 caret-color、改不了形状，所以这里自己画一个方块。
+   真实现里按"文字量宽"把它摆到光标位置（细节体验台已经跑通过这套做法），
+   闪烁周期用 tokens.css 里既有的 --dur-blink。 */
+.x-prompt {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-lg);
+  color: var(--text-3);
+}
+
+.x-typed-wrap {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.x-typed {
+  font-size: var(--font-lg);
+  color: var(--text);
+}
+
+.x-caret {
+  flex: none;
+  width: 8px;
+  height: 18px;
+  background: var(--text);
+  animation: x-blink var(--dur-blink) step-end infinite;
+}
+
+@keyframes x-blink {
+  50% { opacity: 0; }
+}
+
+/* 尊重系统的"减少动态效果"：光标不闪，形状照旧 */
+@media (prefers-reduced-motion: reduce) {
+  .x-caret { animation: none; }
+}
+
+/* ---------- 看稿工具条上方那句"这一版加的是什么" ---------- */
+.v-note {
+  position: fixed;
+  inset: auto 0 58px 0;
+  z-index: 10;
+  padding: 0 24px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: var(--font-md);
+  color: var(--gray-300);
+}
+
+.bare .v-note { display: none; }

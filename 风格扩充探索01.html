@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>风格扩充探索 01 · 以 暖陶 为基准（第二批：程序 / 终端）</title>
+
+<!-- 取值只有一个来源：扩展本体的 LineTab/tokens.css。
+     字段与舞台结构来自 LineTab/newtab.css（中间的搜索线与真页面是同一条），
+     看稿外壳 + 暖陶 的组件修正来自 preview.css，本批新增的零件在 explore01.css。
+     m03195 的口径：保留 01，删掉其余六版；往「程序 / 终端」方向发散，
+     挂在搜索框周围的东西一律不把字段挤出中轴（搜索框必须横向居中）；
+     功能必须真用得到、排版要下功夫；只图好看的大胆但求和谐。 -->
+<link rel="stylesheet" href="LineTab/tokens.css">
+<link rel="stylesheet" href="LineTab/newtab.css">
+<link rel="stylesheet" href="preview.css">
+<link rel="stylesheet" href="explore01.css">
+</head>
+<body>
+
+<div class="bar">
+  <button type="button" data-target="v1" aria-pressed="true">01 每日一句</button>
+  <button type="button" data-target="v2" aria-pressed="false">02 第 1 行</button>
+  <button type="button" data-target="v3" aria-pressed="false">03 终端窗</button>
+  <button type="button" data-target="v4" aria-pressed="false">04 命令补全</button>
+  <button type="button" data-target="v5" aria-pressed="false">05 命令面板</button>
+  <button type="button" data-target="v6" aria-pressed="false">06 块状光标</button>
+  <span class="sep"></span>
+  <button type="button" data-dark aria-pressed="false">暗色</button>
+  <button type="button" data-serif aria-pressed="true">衬线</button>
+</div>
+
+<!-- 这一版加的是什么（看稿工具的说明，+bare 时会藏掉） -->
+<p class="v-note" id="note"></p>
+
+<!-- ===== 01 每日一句（你说这一版稍微好一些，留着当基准）===== -->
+<section class="stage" data-variant="v1" data-style="clay" data-focus="line" data-active
+         data-note="01 每日一句：线下一条衬线大字（今天这一句）＋出处小字，「换一句」就在旁边；句集内置在扩展里，零网络、零新权限。规范里 display 衬线该落的地方。">
+  <main class="page">
+    <div class="fieldbox">
+      <form class="search" role="search">
+        <input class="q" type="text" autocomplete="off" spellcheck="false" placeholder="搜索" aria-label="搜索">
+        <span class="tag">Bing</span>
+      </form>
+      <div class="x-block">
+        <p class="x-quote">山色空濛雨亦奇</p>
+        <p class="x-cite">苏轼《饮湖上初晴后雨》 · <button class="x-act" type="button">换一句</button></p>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ===== 02 第 1 行：编辑器的行号 gutter ===== -->
+<section class="stage" data-variant="v2" data-style="clay" data-focus="line"
+         data-note="02 第 1 行：把搜索线当成「新文件的第一行」—— 左边挂一个行号与一条 gutter 竖线，全挂在字段左侧的留白里，字段本身仍然居中。纯排版，不动字段，零数据。">
+  <main class="page">
+    <div class="fieldbox">
+      <span class="x-gutter" aria-hidden="true">1</span>
+      <form class="search" role="search">
+        <input class="q" type="text" autocomplete="off" spellcheck="false" placeholder="搜索" aria-label="搜索">
+        <span class="tag">Bing</span>
+      </form>
+    </div>
+  </main>
+</section>
+
+<!-- ===== 03 终端窗：四角等宽小字，写的是真状态 ===== -->
+<section class="stage" data-variant="v3" data-style="clay" data-focus="line"
+         data-note="03 终端窗：整页当作一扇终端窗口 —— 左上窗名与版本、左下当前风格与明暗、右下存储与「不发请求」的承诺，都是等宽小字；状态是真读出来的，你切暗色它会跟着变。">
+  <main class="page">
+    <p class="x-head"><span>lineTab — 新标签页</span><span>v1.0.0</span></p>
+    <div class="fieldbox">
+      <form class="search" role="search">
+        <input class="q" type="text" autocomplete="off" spellcheck="false" placeholder="搜索" aria-label="搜索">
+        <span class="tag">Bing</span>
+      </form>
+    </div>
+    <p class="x-foot"><span>暖陶 · 常亮</span><span>本机存储 · 零网络请求</span></p>
+  </main>
+</section>
+
+<!-- ===== 04 命令补全：跟在文字后的灰色幽灵建议 ===== -->
+<section class="stage" data-variant="v4" data-style="clay" data-focus="line"
+         data-note="04 命令补全：打字时后面跟一段灰色幽灵建议（来自本机历史），Tab 或 → 接受 —— 只在输入时出现，不占版面。建议只存本机。">
+  <main class="page">
+    <div class="fieldbox">
+      <form class="search" role="search">
+        <input class="q" type="text" autocomplete="off" spellcheck="false" value="chrome 扩展" aria-label="搜索">
+        <span class="x-ghost" aria-hidden="true"></span>
+        <span class="tag">Bing</span>
+      </form>
+    </div>
+  </main>
+</section>
+
+<!-- ===== 05 命令面板：打一个 / 唤出的本机命令 ===== -->
+<section class="stage" data-variant="v5" data-style="clay" data-focus="line"
+         data-note="05 命令面板：在搜索框里打一个 /（现在就开着），↑↓ 选、回车执行、Esc 收起。命令就是页面本来就有的开关，不用记 1/2/d 这类快捷键，也不需要新权限。">
+  <main class="page">
+    <div class="fieldbox">
+      <form class="search" role="search">
+        <input class="q" type="text" autocomplete="off" spellcheck="false" placeholder="搜索" aria-label="搜索">
+        <span class="tag">Bing</span>
+      </form>
+      <div class="x-menu">
+        <button class="x-menu-row x-menu-on" type="button" data-cmd="dark">
+          <span class="x-menu-mark" aria-hidden="true">›</span><span class="x-menu-name">暗色</span><span class="x-menu-value">常亮</span>
+        </button>
+        <button class="x-menu-row" type="button" data-cmd="serif">
+          <span class="x-menu-mark" aria-hidden="true">›</span><span class="x-menu-name">衬线</span><span class="x-menu-value">开</span>
+        </button>
+        <button class="x-menu-row" type="button" data-cmd="next">
+          <span class="x-menu-mark" aria-hidden="true">›</span><span class="x-menu-name">下一种方案</span><span class="x-menu-value">02 第 1 行</span>
+        </button>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ===== 06 提示符 ❯ + 块状光标 ===== -->
+<section class="stage" data-variant="v6" data-style="clay" data-focus="line"
+         data-note="06 块状光标：❯ 提示符 + 画出来的方块光标（按 tokens.css 的 --dur-blink 闪）。浏览器改不了原生光标的形状，所以真实现要自己画、按文字量宽摆放 —— 细节体验台已经跑通过这套做法。">
+  <main class="page">
+    <div class="fieldbox">
+      <form class="search" role="search">
+        <span class="x-prompt" aria-hidden="true">❯</span>
+        <span class="x-typed-wrap">
+          <span class="x-typed">chrome 扩展</span>
+          <span class="x-caret" aria-hidden="true"></span>
+        </span>
+        <span class="tag">Bing</span>
+      </form>
+    </div>
+  </main>
+</section>
+
+<!-- ===== 说明与代价（看稿工具的一部分，+bare 与视口截图都不带它出来）===== -->
+<section class="refs">
+  <h2 class="refs-title">风格扩充探索 01 · 第二批：往程序 / 终端方向发散</h2>
+  <p class="refs-note">按 m03195：<strong>保留 01</strong>（你说稍微好一些），其余六版删掉；这一批都建立在「搜索框横向居中、字段外观不动」的前提下，挂在它周围的东西一律不把字段挤出中轴。</p>
+
+  <table class="refs-table">
+    <thead><tr><th>方案</th><th>加的是什么</th><th>实现代价</th></tr></thead>
+    <tbody>
+      <tr><td>01 每日一句</td><td>衬线大字（今天的句子）＋出处小字＋「换一句」</td><td>内置一份小句集（几 KB 文本，零网络）；纯前端</td></tr>
+      <tr><td>02 第 1 行</td><td>行号 + gutter 竖线，挂在字段左侧留白</td><td>纯 CSS 三行，零数据、零权限</td></tr>
+      <tr><td>03 终端窗</td><td>四角等宽小字：窗名 / 版本 / 当前风格与明暗 / 存储与零请求</td><td>纯 CSS + 读已有状态；零数据、零权限</td></tr>
+      <tr><td>04 命令补全</td><td>输入时跟在文字后的灰色幽灵建议，Tab 或 → 接受</td><td>纯前端；建议来自本机历史（只为它存一份小列表）</td></tr>
+      <tr><td>05 命令面板</td><td>打一个 <code>/</code> 唤出的命令菜单（↑↓ / 回车 / Esc）</td><td>纯前端；命令就是页面已有的开关，不需要新权限</td></tr>
+      <tr><td>06 块状光标</td><td><code>❯</code> 提示符 + 方块光标（1.06s 闪）</td><td>只改 CSS 与绘制；真实现要量宽摆放（细节体验台有现成做法）</td></tr>
+    </tbody>
+  </table>
+
+  <p class="refs-note">两点说明：① 右下角的齿轮与设置面板跟真页面一样，这里每幅不重复抄（要看那两样去 Preview.html），舞台里只有中间那一块是新东西；② 04 的建议、05 的命令都只在本机跑，扩展至今仍是零网络请求 —— 加东西不该把这个前提弄丢。</p>
+</section>
+
+<script>
+const VARIANTS = ['v1', 'v2', 'v3', 'v4', 'v5', 'v6'];
+const VAR_NAMES = {
+  v1: '01 每日一句', v2: '02 第 1 行', v3: '03 终端窗',
+  v4: '04 命令补全', v5: '05 命令面板', v6: '06 块状光标',
+};
+/* 04 的「本机历史」演示数据：真实现里这份列表来自 chrome.storage.local */
+const SUGGESTIONS = [
+  'chrome 扩展 上架清单',
+  'chrome 扩展 图标 16px',
+  'playwright 快照 容差 0',
+  '中文字体 衬线 系统栈',
+  'claude 设计规范 取值',
+];
+
+const stages = [...document.querySelectorAll('.stage')];
+const buttons = [...document.querySelectorAll('.bar button[data-target]')];
+const darkButton = document.querySelector('.bar button[data-dark]');
+const serifButton = document.querySelector('.bar button[data-serif]');
+const note = document.getElementById('note');
+
+let dark = false;
+let serif = true;
+let current = 'v1';
+
+/* 量文字宽度用的隐形元素（与输入框同字体），04 的幽灵建议靠它定位 */
+const measure = document.createElement('span');
+measure.className = 'x-measure';
+document.body.appendChild(measure);
+
+function widthOf(el, text) {
+  const cs = getComputedStyle(el);
+  measure.style.fontFamily = cs.fontFamily;
+  measure.style.fontSize = cs.fontSize;
+  measure.style.fontWeight = cs.fontWeight;
+  measure.style.letterSpacing = cs.letterSpacing;
+  measure.textContent = text;
+  return measure.getBoundingClientRect().width;
+}
+
+/* ---------- 三套状态：当前方案 / 明暗 / 衬线 ---------- */
+function show(name) {
+  const stage = stages.find(s => s.dataset.variant === name);
+  current = name;
+  stages.forEach(s => s.toggleAttribute('data-active', s === stage));
+  buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.target === name)));
+  if (stage) note.textContent = stage.dataset.note;
+  syncAll();
+}
+
+function applyDark(on) {
+  dark = on;
+  stages.forEach(s => on ? s.setAttribute('data-theme', 'dark') : s.removeAttribute('data-theme'));
+  darkButton.setAttribute('aria-pressed', String(on));
+  syncAll();
+}
+
+/* 衬线开关：暖陶 的字段文字走系统衬线栈（规范要求 display 衬线），
+   关掉即回到系统 UI 栈 —— 同一页上直接对比中文小字号的观感。 */
+function applySerif(on) {
+  serif = on;
+  document.body.dataset.serif = on ? 'on' : 'off';
+  serifButton.setAttribute('aria-pressed', String(on));
+  syncAll();
+}
+
+/* 03 的左下角与 05 的菜单右列都显示真状态，所以任何一处变化都要一起刷 */
+function syncAll() {
+  const next = VAR_NAMES[VARIANTS[(VARIANTS.indexOf(current) + 1) % VARIANTS.length]];
+  stages.forEach(stage => {
+    const foot = stage.querySelector('.x-foot');
+    if (foot) foot.firstElementChild.textContent = `暖陶 · ${dark ? '常暗' : '常亮'}`;
+    stage.querySelectorAll('.x-menu-row').forEach(row => {
+      const value = row.querySelector('.x-menu-value');
+      if (row.dataset.cmd === 'dark') value.textContent = dark ? '常暗' : '常亮';
+      if (row.dataset.cmd === 'serif') value.textContent = serif ? '开' : '关';
+      if (row.dataset.cmd === 'next') value.textContent = next;
+    });
+  });
+  syncGhost();
+}
+
+/* ---------- 04 命令补全 ---------- */
+const v4Input = document.querySelector('.stage[data-variant="v4"] .q');
+const v4Ghost = document.querySelector('.stage[data-variant="v4"] .x-ghost');
+
+function syncGhost() {
+  if (!v4Input || !v4Ghost) return;
+  const value = v4Input.value;
+  const hit = value && SUGGESTIONS.find(
+    s => s.length > value.length && s.toLowerCase().startsWith(value.toLowerCase()),
+  );
+  if (!hit) {
+    v4Ghost.textContent = '';
+    delete v4Ghost.dataset.full;
+    return;
+  }
+  const cs = getComputedStyle(v4Input);
+  v4Ghost.style.fontFamily = cs.fontFamily;
+  v4Ghost.style.fontWeight = cs.fontWeight;
+  v4Ghost.style.letterSpacing = cs.letterSpacing;
+  v4Ghost.textContent = hit.slice(value.length);
+  v4Ghost.style.left = `${v4Input.offsetLeft + widthOf(v4Input, value)}px`;
+  v4Ghost.dataset.full = hit;
+}
+
+function acceptGhost() {
+  const full = v4Ghost && v4Ghost.dataset.full;
+  if (!full) return false;
+  v4Input.value = full;
+  syncGhost();
+  return true;
+}
+
+v4Input.addEventListener('input', syncGhost);
+v4Input.addEventListener('keydown', e => {
+  const atEnd = v4Input.selectionStart === v4Input.value.length;
+  if ((e.key === 'Tab' || e.key === 'ArrowRight') && atEnd && acceptGhost()) e.preventDefault();
+});
+
+/* ---------- 05 命令面板 ---------- */
+const v5Input = document.querySelector('.stage[data-variant="v5"] .q');
+const v5Menu = document.querySelector('.stage[data-variant="v5"] .x-menu');
+const v5Rows = [...document.querySelectorAll('.stage[data-variant="v5"] .x-menu-row')];
+let v5Selected = 0;
+
+function menuOpen(open) { v5Menu.hidden = !open; }
+
+function menuSelect(index) {
+  v5Selected = (index + v5Rows.length) % v5Rows.length;
+  v5Rows.forEach((row, k) => row.classList.toggle('x-menu-on', k === v5Selected));
+}
+
+function menuFilter(text) {
+  const query = text.trim().toLowerCase();
+  v5Rows.forEach(row => {
+    const name = row.querySelector('.x-menu-name').textContent.toLowerCase();
+    row.hidden = Boolean(query) && !name.includes(query);
+  });
+  const firstVisible = v5Rows.findIndex(row => !row.hidden);
+  menuSelect(firstVisible < 0 ? 0 : firstVisible);
+}
+
+function runCommand(cmd) {
+  if (cmd === 'dark') applyDark(!dark);
+  if (cmd === 'serif') applySerif(!serif);
+  if (cmd === 'next') show(VARIANTS[(VARIANTS.indexOf(current) + 1) % VARIANTS.length]);
+  v5Input.value = '';
+  menuFilter('');
+  menuOpen(false);
+}
+
+function runSelected() {
+  const row = v5Rows[v5Selected];
+  if (row) runCommand(row.dataset.cmd);
+}
+
+v5Rows.forEach((row, k) => {
+  row.addEventListener('click', () => runCommand(row.dataset.cmd));
+  row.addEventListener('focus', () => menuSelect(k));
+});
+
+v5Input.addEventListener('input', () => {
+  const value = v5Input.value;
+  if (value.startsWith('/')) {
+    menuFilter(value.slice(1));
+    menuOpen(true);
+  } else {
+    menuOpen(false);
+  }
+});
+
+v5Input.addEventListener('keydown', e => {
+  if (v5Menu.hidden) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); menuSelect(v5Selected + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); menuSelect(v5Selected - 1); }
+  else if (e.key === 'Enter') { e.preventDefault(); runSelected(); }
+  else if (e.key === 'Escape') { e.preventDefault(); v5Input.value = ''; menuFilter(''); menuOpen(false); }
+});
+
+/* ---------- 工具条与键盘 ---------- */
+buttons.forEach(b => b.addEventListener('click', () => show(b.dataset.target)));
+darkButton.addEventListener('click', () => applyDark(!dark));
+serifButton.addEventListener('click', () => applySerif(!serif));
+
+// 键盘：1-6 切方案、d 切暗色。在输入框里打字时不抢键（真踩过）。
+addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea')) return;
+  const i = Number(e.key) - 1;
+  if (buttons[i]) show(buttons[i].dataset.target);
+  if (e.key === 'd' || e.key === 'D') applyDark(!dark);
+});
+
+// 字号一变，幽灵建议的位置就得重算
+addEventListener('resize', syncGhost);
+
+// 支持 #v1..#v6 [+dark][+noserif][+bare] 直接摆好状态，方便对照与截图：
+//   #v2             —— 02 第 1 行
+//   #v3+dark        —— 03 终端窗的暗色
+//   #v5             —— 05 命令面板（默认就开着）
+//   #v4+noserif     —— 04 关掉衬线（对比中文小字号）
+const parts = location.hash.slice(1).split('+').filter(Boolean);
+const picked = parts.find(p => buttons.some(b => b.dataset.target === p));
+applySerif(true);
+applyDark(false);
+show(picked || 'v1');
+if (parts.includes('dark')) applyDark(true);
+if (parts.includes('noserif')) applySerif(false);
+if (parts.includes('bare')) document.body.classList.add('bare');
+</script>
+</body>
+</html>

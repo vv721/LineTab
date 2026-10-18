@@ -1,0 +1,112 @@
+/* ============================================================
+   全局设计 · E 暖陶（引导语版 · 参数可调）
+
+   页面只有两个元素：搜索线**上方**一句引导语（`Type something`，站的是原本"品牌标"那一格）
+   + 那条搜索线本身（一个零件都没动）。
+
+   你说的"可以发挥的空间"就是下面这五个参数 —— 工具条上可以自己拉，实时生效：
+     ① --g-size  引导语字号        （默认 32px = --font-2xl）
+     ② --g-gap   引导语与线的间隔   （默认 55px）
+     ③ data-align 引导语相对线的水平对齐（center / start / end）
+     ④ --g-dx    搜索线横向偏移     （默认 0 = 居中）
+     ⑤ --g-dy    整组竖直偏移       （默认 0 = 几何居中；按视口高的百分比算）
+   这五个值只在看稿工具里由 JS 写到自定义属性上；定下来之后它们会变成 tokens.css 里的
+   正式令牌（字号必须走令牌 —— stylelint 会拦裸 font-size，所以默认值就是令牌）。
+
+   取值只有一个来源：LineTab/tokens.css。字段与布局来自 LineTab/newtab.css（这条线就是
+   真页面那条线），看稿外壳与 E 暖陶 的组件修正来自 preview.css。
+
+   参数出处：Claude 规范的 display 刻度（28 / 36 / 48，一律 400 字重 + 负字距）；
+   本项目自己的间距刻度 4 / 8 / 12 / 20 / 32 / 52 / 84；
+   composition.md（get-design-done 1.60.1）里那几条 —— 视觉重量 = 尺寸 × 对比 × 孤立 × 复杂度、
+   "平衡"是两侧重量差在 20% 以内、单焦点要 ≥ 次重元素的 1.5×、
+   光学居中要按大写高度对齐（数学居中常常看着不居中）、居中/对称构图可覆盖三分法。
+   ============================================================ */
+
+/* ---------- 默认构图（就是设计稿此刻的默认） ----------
+   这几行里的数字就是参数面板的默认值，也是用户在实验室里挑定的那一组：
+   字号 41px（令牌 --font-mark）、间隔 55px、整组竖直 −12%、水平不偏。
+   工具条上的滑块是**看稿仪器**，由 JS 写行内样式临时覆盖这里；
+   点了「重置」就把行内样式清掉，回到这几行 —— 也就回到令牌。
+   所以设计值只有 tokens.css 一个来源，参数不进令牌表。 */
+.g-mark {
+  margin: 0;                                 /* <p> 自带 1em 上下边距，不清掉参数会失真 */
+  font-family: var(--font-serif);
+  font-size: var(--font-mark);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--text);
+  text-align: center;
+}
+
+/* ② 引导语与线的间隔。newtab.css 给 .fieldbox 的 12px 是"搜索框 + 下方提示"的间距，
+   上面立了标之后要用这里的参数，两个元素才会读成一组。 */
+.stage .fieldbox { gap: 55px; transform: translateY(-12vh); }
+
+/* ③ 引导语相对线的水平对齐（默认居中 = 父级 align-items: center） */
+.stage[data-align="start"] .g-mark { align-self: flex-start; }
+.stage[data-align="end"] .g-mark { align-self: flex-end; }
+
+/* ============================================================
+   下面是看稿工具（参数面板），不属于设计稿
+   ============================================================ */
+
+/* 工具条改成一条能放下的参数面板。
+   说明行与工具条放在同一个贴着底边的容器里（上下排），
+   否则工具条折行变高以后会钻到说明行下面、点不到。
+   一条行高约 44px：这样它停在右下角那枚设置齿轮（距底 76px）下面，不打架。 */
+.dock {
+  position: fixed;
+  inset: auto 0 16px 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dock .bar {
+  position: static;
+  inset: auto;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 0 24px;
+  align-items: center;
+}
+
+.bare .dock { display: none; }
+
+.ctl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray-200);
+  font-size: var(--font-md);
+  white-space: nowrap;
+}
+
+.ctl input[type="range"] {
+  width: 84px;
+  accent-color: var(--gray-300);
+}
+
+.ctl output {
+  min-width: 34px;
+  font-family: var(--font-mono);
+  font-size: var(--font-sm);
+  color: var(--gray-0);
+  text-align: right;
+}
+
+.seg { display: inline-flex; gap: 6px; }
+
+/* 说明行（与 explore01.css 里那条同款，这一页不引那个文件） */
+.v-note {
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: var(--font-md);
+  color: var(--gray-300);
+}
