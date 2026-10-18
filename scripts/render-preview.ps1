@@ -1,5 +1,5 @@
 ﻿# ============================================================
-# 用本机已装的 Chrome 把风格预览渲染成图（零安装：不用 Playwright）
+# 用本机已装的 Chrome 把Preview渲染成图（零安装：不用 Playwright）
 #
 # 两个已经踩过的坑，别再踩：
 #   1) Windows PowerShell 5.1 会把「没有 BOM 的 UTF-8 .ps1」当 ANSI 读，

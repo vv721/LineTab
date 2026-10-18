@@ -226,7 +226,7 @@ test('T5 存着一个已经不存在的风格时，回落到默认风格（存�
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('#q')).toBeFocused();
     await expect(page.locator('html')).toHaveAttribute('data-style', 'paper');
-    await expect(page.locator('#style-value')).toHaveText('A 纸白');
+    await expect(page.locator('#style-value')).toHaveText('纸白');
   } finally {
     await context.close();
   }
@@ -265,7 +265,7 @@ test('T7 合并窗口内关页：改动由本地镜像保住（两份存储取�
     await page.evaluate(([key, v]) => chrome.storage.sync.set({ [key]: v }), [STORE_KEY, STALE]);
     await page.clock.install(); // 冻结计时器：200ms 的合并永远不会到点
     await page.locator('#settings').click();
-    await page.locator('#style').click(); // 切到 C 点阵 → 只写进了本地镜像
+    await page.locator('#style').click(); // 切到 点阵 → 只写进了本地镜像
     await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
     // 负面控制：sync 里还是那份旧的，说明这次改动确实没发出去
     const before = await page.evaluate((key) => chrome.storage.sync.get(key), STORE_KEY);
@@ -280,7 +280,7 @@ test('T7 合并窗口内关页：改动由本地镜像保住（两份存储取�
     await expect(page.locator('#q')).toBeFocused();
     // 旧实现到这里会读到 sync 里的 paper（镜像永远不被采纳）——这就是修掉的那条路径
     await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
-    await expect(page.locator('#style-value')).toHaveText('C 点阵');
+    await expect(page.locator('#style-value')).toHaveText('点阵');
   } finally {
     await context.close();
   }
@@ -312,7 +312,7 @@ test('T8 改完设置立刻离开页面：pagehide 会把没发出去的写入�
     const { page } = await openNewTab(context);
     await expect(page.locator('#q')).toBeFocused();
     await expect(page.locator('html')).toHaveAttribute('data-style', 'grid');
-    await expect(page.locator('#style-value')).toHaveText('C 点阵');
+    await expect(page.locator('#style-value')).toHaveText('点阵');
   } finally {
     await context.close();
   }

@@ -1,7 +1,7 @@
 // ============================================================
 // 真页面的视觉回归：把 LineTab/newtab.html（真新标签页，无看稿工具条）的
 // 九种状态逐像素钉住。和 visual.spec.mjs 的分工：
-//   visual.spec.mjs —— 风格预览.html，用来挑风格、比候选；
+//   visual.spec.mjs —— Preview.html，用来挑风格、比候选；
 //   newtab.spec.mjs  —— 交付页 LineTab/newtab.html，用来防止已定下的样子被改坏。
 //
 // 两件为了"确定性"必须做的事：
