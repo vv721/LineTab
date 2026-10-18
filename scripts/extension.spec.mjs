@@ -400,6 +400,12 @@ test('T10 光标只从两个地方来：新标签页自动、点搜索框', asyn
     // ① 新标签页自动拿光标
     await expect(page.locator('#q')).toBeFocused();
 
+    // 对照：用户还没动手时，window focus 那条兜底确实会把光标补回来（证明 arming 是活的）
+    await page.locator('#q').blur();
+    await expect(page.locator('#q')).not.toBeFocused();
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(page.locator('#q')).toBeFocused();
+
     // ② 开面板：焦点落在齿轮上，搜索框不抢回去
     await page.locator('#settings').click();
     await expect(page.locator('#panel')).toBeVisible();
@@ -423,12 +429,28 @@ test('T10 光标只从两个地方来：新标签页自动、点搜索框', asyn
     await page.keyboard.type('天气');
     await expect(page.locator('#q')).toHaveValue('天气');
 
-    // Esc 放掉光标之后不再自己回来（窗口 focus 那条兜底只对"刚打开"有效）
+    // Esc 放掉光标之后不再自己回来：这次真的派发一次 window focus（模拟切回标签页），
+    // 光标也不该回来 —— 用户第一次点/按键就把那条"刚打开"兜底解除了
     await page.keyboard.press('Escape');
     await expect(page.locator('#q')).not.toBeFocused();
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(page.locator('#q')).not.toBeFocused();
 
-    // 键盘操作路径还在：Tab 到齿轮、回车开面板，焦点不会掉到 body
-    await page.locator('#settings').focus();
+    // 原来那条 `/` 聚焦搜索框的快捷键已经删了：按下去光标也不该回来
+    await page.keyboard.press('/');
+    await expect(page.locator('#q')).not.toBeFocused();
+
+    // 键盘顺序还在：一路 Tab 能到搜索框，再往后依次是 引擎标签 → 齿轮（不调 .focus() 抄近路）。
+    // Tab 的起点由最后一次点击决定，所以先按到搜索框为止（最多四步，含焦点短暂离开页面的那一跳）。
+    for (let i = 0; i < 4; i++) {
+      if (await page.evaluate(() => document.activeElement === document.getElementById('q'))) break;
+      await page.keyboard.press('Tab');
+    }
+    await expect(page.locator('#q')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#engine-tag')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#settings')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.locator('#panel')).toBeVisible();
     await expect(page.locator('#settings')).toBeFocused();
@@ -439,6 +461,16 @@ test('T10 光标只从两个地方来：新标签页自动、点搜索框', asyn
     await page.keyboard.press('Escape');
     await expect(page.locator('#engine')).toBeFocused();
     await page.keyboard.press('Escape');
+    await expect(page.locator('#panel')).toBeHidden();
+    await expect(page.locator('#settings')).toBeFocused();
+    await expect(page.locator('#q')).not.toBeFocused();
+
+    // 面板与引擎菜单都开着（焦点在菜单项上）时点引擎标签：菜单和面板一起收，
+    // 焦点交回齿轮 —— 不会掉到 body（快照要在收菜单之前取，否则焦点已经没了）
+    await page.locator('#settings').click();
+    await page.locator('#engine').click();
+    await expect(rowOf(page, 'engine').locator('.menu-opt:focus')).toHaveCount(1);
+    await page.locator('#engine-tag').click();
     await expect(page.locator('#panel')).toBeHidden();
     await expect(page.locator('#settings')).toBeFocused();
     await expect(page.locator('#q')).not.toBeFocused();

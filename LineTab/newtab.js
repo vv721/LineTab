@@ -927,11 +927,14 @@ function openPanel(open) {
   el.panel.hidden = !open;
   el.settings.setAttribute('aria-expanded', String(open));
   if (open) return;
+  /* 焦点快照必须在 closeMenus() 之前取：收菜单会先把焦点所在的菜单项 hidden 掉，
+     那之后 document.activeElement 可能已经不是面板里的元素（随浏览器 fixup 时机变）。 */
+  const focusInPanel = el.panel.contains(document.activeElement);
   closeMenus();
   /* 关面板时焦点正停在面板里的某个按钮上，它会跟着 hidden 一起消失、掉到 body。
      交回给打开面板的齿轮按钮 —— 这是「焦点从哪来回哪去」，不是把光标塞回搜索框
      （用户 m01157：光标的来源只该有两种，新标签页自动、点搜索框）。 */
-  if (el.panel.contains(document.activeElement)) el.settings.focus();
+  if (focusInPanel) el.settings.focus();
 }
 
 function bindEvents() {
