@@ -5,7 +5,7 @@
 // 浏览器只会静默回退，属于最难发现的一类事故。这个脚本补上这一格。
 //
 // 用法：
-//   node scripts/check-tokens.mjs                       # 扫项目根目录的 *.css / *.html
+//   node scripts/check-tokens.mjs                       # 扫 LineTab/ + design/ + design/archive/ 的 *.css / *.html
 //   node scripts/check-tokens.mjs tmp/故意坏的文件.css    # 只扫指定文件（自测用）
 // 退出码：0 = 全部有出处；1 = 有悬空令牌。
 //
@@ -17,8 +17,12 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-/* 令牌定义与真页面都在安装目录里（LineTab/），探索页与样式留项目根 */
-const SCAN_DIRS = [root, path.join(root, 'LineTab')];
+/* 令牌定义在安装目录里（LineTab/）；看稿页在 design/，探索页留档在 design/archive/ */
+const SCAN_DIRS = [
+  path.join(root, 'LineTab'),
+  path.join(root, 'design'),
+  path.join(root, 'design', 'archive'),
+];
 const tokensFile = path.join(root, 'LineTab', 'tokens.css');
 
 /** @returns {Set<string>} tokens.css 里定义过的令牌名 */

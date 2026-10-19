@@ -13,10 +13,10 @@
 //
 // 用法：node scripts/pack.mjs        （`npm run pack`）
 //       输入：LineTab/（与装载进 Chrome 的目录完全同一份）
-//       产物：<项目根>/LineTab-<version>.zip
+//       产物：<项目根>/release/LineTab-<version>.zip
 // ============================================================
 import { deflateRawSync, crc32, inflateRawSync } from 'node:zlib';
-import { readFileSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { EXT_DIR, PROJECT_ROOT, RUNTIME_FILES } from './runtime-files.mjs';
 
@@ -30,7 +30,9 @@ const pass = (message) => done.push(message);
 const manifest = JSON.parse(readFileSync(join(EXT, 'manifest.json'), 'utf8'));
 const version = String(manifest.version);
 const outName = `${manifest.name}-${version}.zip`;
-const outPath = join(ROOT, outName);
+const outDir = join(ROOT, 'release');
+mkdirSync(outDir, { recursive: true });
+const outPath = join(outDir, outName);
 
 /* ---------- 1. 白名单里的文件都得在，且都读得出来 ---------- */
 const entries = [];

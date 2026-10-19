@@ -17,9 +17,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
 // 按脚本自身位置解析页面，而不是当前工作目录——这样从任何目录运行都找得到
-// （用 path.resolve('Preview.html') 会跟着 cwd 走，在别的目录下整轮 ERR_FILE_NOT_FOUND）。
+// （用 path.resolve('design/Preview.html') 会跟着 cwd 走，在别的目录下整轮 ERR_FILE_NOT_FOUND）。
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const PAGE = pathToFileURL(path.join(ROOT, 'Preview.html')).href;
+const PAGE = pathToFileURL(path.join(ROOT, 'design', 'Preview.html')).href;
 
 /** 镜头清单：[hash 参数, 中文名]。 */
 const SHOTS = [

@@ -25,8 +25,8 @@ param(
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
 if (-not $Page) {
-  $html = Get-ChildItem $root -Filter *.html | Select-Object -First 1
-  if (-not $html) { throw "在 $root 下没找到 .html 预览页" }
+  $html = Get-ChildItem (Join-Path $root 'design') -Filter *.html | Select-Object -First 1
+  if (-not $html) { throw "在 (Join-Path $root 'design') 下没找到 .html 预览页" }
   $Page = $html.FullName
 }
 if (-not (Test-Path $Page)) { throw "预览页不存在：$Page" }
